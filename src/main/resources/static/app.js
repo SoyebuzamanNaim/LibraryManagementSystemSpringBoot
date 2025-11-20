@@ -550,7 +550,7 @@
 
     logout() {
       Storage.clearSession();
-      window.location.href = "login.html";
+      window.location.href = "/login";
     },
 
     isAuthenticated() {
@@ -566,7 +566,7 @@
 
     requireAuth() {
       if (!this.isAuthenticated()) {
-        window.location.href = "login.html";
+        window.location.href = "/login";
         return false;
       }
       return true;
@@ -2527,19 +2527,19 @@
     navigateToItem(type, id) {
       switch (type) {
         case "book":
-          window.location.href = `edit-book.html?id=${id}`;
+          window.location.href = `/edit-book?id=${id}`;
           break;
         case "student":
-          window.location.href = `edit-student.html?id=${id}`;
+          window.location.href = `/edit-student?id=${id}`;
           break;
         case "vendor":
-          window.location.href = "vendors.html";
+          window.location.href = "/vendors";
           break;
         case "publication":
-          window.location.href = "publications.html";
+          window.location.href = "/publications";
           break;
         case "allotment":
-          window.location.href = "allotments.html";
+          window.location.href = "/allotments";
           break;
       }
     },
@@ -2560,23 +2560,23 @@
       );
 
       if (results.books.length === maxResults) {
-        window.location.href = `books.html?search=${encodeURIComponent(
+        window.location.href = `/books?search=${encodeURIComponent(
           searchTerm
         )}`;
       } else if (results.students.length === maxResults) {
-        window.location.href = `students.html?search=${encodeURIComponent(
+        window.location.href = `/students?search=${encodeURIComponent(
           searchTerm
         )}`;
       } else if (results.vendors.length === maxResults) {
-        window.location.href = `vendors.html?search=${encodeURIComponent(
+        window.location.href = `/vendors?search=${encodeURIComponent(
           searchTerm
         )}`;
       } else if (results.publications.length === maxResults) {
-        window.location.href = `publications.html?search=${encodeURIComponent(
+        window.location.href = `/publications?search=${encodeURIComponent(
           searchTerm
         )}`;
       } else if (results.allotments.length === maxResults) {
-        window.location.href = `allotments.html?search=${encodeURIComponent(
+        window.location.href = `/allotments?search=${encodeURIComponent(
           searchTerm
         )}`;
       }
