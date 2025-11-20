@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports - Library Management System</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/scripts/tailwind-config.js"></script>
+  </head>
+  <body>
+    <div class="app-container flex min-h-screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>Library System</h2>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/books">Books</a></li>
+            <li><a href="/students">Students</a></li>
+            <li><a href="/allotments">Allotments</a></li>
+            <li><a href="/vendors">Vendors</a></li>
+            <li><a href="/publications">Publications</a></li>
+            <li><a href="/subscriptions">Subscriptions</a></li>
+            <li><a href="/reports" class="active">Reports</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay"></div>
+
+      <main class="main-content flex-1 flex flex-col">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+              ☰
+            </button>
+            <h1>Reports</h1>
+          </div>
+          <div class="topbar-search">
+            <input
+              type="search"
+              id="topbarSearch"
+              placeholder="Search reports..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            class="topbar-search-icon"
+            id="mobileSearchBtn"
+            aria-label="Search"
+            title="Search"
+          >
+            🔍
+          </button>
+          <div class="topbar-actions"></div>
+        </header>
+
+        <!-- Mobile Search Overlay -->
+        <div class="topbar-search-overlay" id="mobileSearchOverlay">
+          <div class="topbar-search-mobile">
+            <input
+              type="search"
+              id="mobileSearchInput"
+              placeholder="Search reports..."
+              autocomplete="off"
+            />
+            <button
+              class="close-search"
+              id="closeMobileSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
+          <div
+            class="breadcrumbs flex items-center gap-2 mb-4 md:mb-6 text-sm text-gray-600 flex-wrap"
+          >
+            <a
+              href="/dashboard"
+              class="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+              >Dashboard</a
+            >
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-semibold">Reports</span>
+          </div>
+          <div
+            class="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8"
+          >
+            <button
+              class="stat-card"
+              id="overdueReportBtn"
+              style="cursor: pointer; text-align: left"
+            >
+              <h3>Overdue Books</h3>
+              <div class="value" id="overdueCount">0</div>
+              <p
+                style="
+                  margin-top: 0.5rem;
+                  font-size: 0.875rem;
+                  color: var(--text-secondary);
+                "
+              >
+                Generate overdue list
+              </p>
+            </button>
+            <button
+              class="stat-card"
+              id="currentAllotmentsReportBtn"
+              style="cursor: pointer; text-align: left"
+            >
+              <h3>Current Allotments</h3>
+              <div class="value" id="currentAllotmentsCount">0</div>
+              <p
+                style="
+                  margin-top: 0.5rem;
+                  font-size: 0.875rem;
+                  color: var(--text-secondary);
+                "
+              >
+                View active allotments
+              </p>
+            </button>
+            <button
+              class="stat-card"
+              id="purchaseHistoryReportBtn"
+              style="cursor: pointer; text-align: left"
+            >
+              <h3>Purchase History</h3>
+              <div class="value" id="purchaseCount">0</div>
+              <p
+                style="
+                  margin-top: 0.5rem;
+                  font-size: 0.875rem;
+                  color: var(--text-secondary);
+                "
+              >
+                View book purchases
+              </p>
+            </button>
+            <button
+              class="stat-card"
+              id="subscriptionsReportBtn"
+              style="cursor: pointer; text-align: left"
+            >
+              <h3>Student Subscriptions</h3>
+              <div class="value" id="subscriptionsCount">0</div>
+              <p
+                style="
+                  margin-top: 0.5rem;
+                  font-size: 0.875rem;
+                  color: var(--text-secondary);
+                "
+              >
+                View subscriptions
+              </p>
+            </button>
+          </div>
+
+          <div class="table-container">
+            <div class="table-header">
+              <h2 id="reportTitle">Select a report to view</h2>
+              <div class="table-controls">
+                <button
+                  class="btn btn-primary"
+                  id="exportBtn"
+                  style="display: none"
+                  aria-label="Export report to CSV"
+                  type="button"
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <div id="reportContainer">
+                <div class="empty-state">
+                  <div class="empty-state-icon">📊</div>
+                  <h3>Select a report above to view data</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/scripts/reports.js"></script>
+  </body>
+</html>

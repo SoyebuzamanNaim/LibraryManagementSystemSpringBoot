@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Books - Library Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/scripts/tailwind-config.js"></script>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-container flex min-h-screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>Library System</h2>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/books" class="active">Books</a></li>
+            <li><a href="/students">Students</a></li>
+            <li><a href="/allotments">Allotments</a></li>
+            <li><a href="/vendors">Vendors</a></li>
+            <li><a href="/publications">Publications</a></li>
+            <li><a href="/subscriptions">Subscriptions</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay"></div>
+
+      <main class="main-content flex-1 flex flex-col">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn md:hidden" aria-label="Toggle menu">
+              ☰
+            </button>
+            <h1>Books</h1>
+          </div>
+          <div class="topbar-search">
+            <input
+              type="search"
+              id="topbarSearch"
+              placeholder="Search books by title, author, ISBN..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            class="topbar-search-icon"
+            id="mobileSearchBtn"
+            aria-label="Search"
+            title="Search"
+          >
+            🔍
+          </button>
+          <div class="topbar-actions">
+            <a href="/add-book" class="btn btn-primary">Add Book</a>
+          </div>
+        </header>
+
+        <!-- Mobile Search Overlay -->
+        <div class="topbar-search-overlay" id="mobileSearchOverlay">
+          <div class="topbar-search-mobile">
+            <input
+              type="search"
+              id="mobileSearchInput"
+              placeholder="Search books by title, author, ISBN..."
+              autocomplete="off"
+            />
+            <button
+              class="close-search"
+              id="closeMobileSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
+          <div
+            class="breadcrumbs flex items-center gap-2 mb-6 text-sm text-gray-600 flex-wrap"
+          >
+            <a
+              href="/dashboard"
+              class="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+              >Dashboard</a
+            >
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-semibold">Books</span>
+          </div>
+          <div
+            class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+          >
+            <div
+              class="px-4 md:px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+            >
+              <h2 class="text-xl md:text-2xl font-bold text-gray-900">
+                All Books<span
+                  class="text-sm text-gray-500 font-normal ml-2"
+                  id="bookCount"
+                ></span>
+              </h2>
+              <div
+                class="flex flex-col md:flex-row gap-3 md:items-center w-full md:w-auto"
+              >
+                <select
+                  id="sortSelect"
+                  title="Sort books"
+                  class="w-full md:w-auto px-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer bg-white"
+                >
+                  <option value="title-asc">Title (A-Z)</option>
+                  <option value="title-desc">Title (Z-A)</option>
+                  <option value="author-asc">Author (A-Z)</option>
+                  <option value="created-desc">Newest First</option>
+                  <option value="created-asc">Oldest First</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <div id="tableContainer" class="min-w-full"></div>
+            </div>
+            <div
+              id="paginationContainer"
+              class="px-4 md:px-6 py-4 border-t border-gray-200"
+            ></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/scripts/books.js"></script>
+  </body>
+</html>

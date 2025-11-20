@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Book - Library Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/scripts/tailwind-config.js"></script>
+  </head>
+  <body>
+    <div class="app-container flex min-h-screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>Library System</h2>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/books" class="active">Books</a></li>
+            <li><a href="/students">Students</a></li>
+            <li><a href="/allotments">Allotments</a></li>
+            <li><a href="/vendors">Vendors</a></li>
+            <li><a href="/publications">Publications</a></li>
+            <li><a href="/subscriptions">Subscriptions</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay"></div>
+
+      <main class="main-content flex-1 flex flex-col">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+              ☰
+            </button>
+            <h1>Add Book</h1>
+          </div>
+          <div class="topbar-search">
+            <input
+              type="search"
+              id="topbarSearch"
+              placeholder="Quick search..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            class="topbar-search-icon"
+            id="mobileSearchBtn"
+            aria-label="Search"
+            title="Search"
+          >
+            🔍
+          </button>
+          <div class="topbar-actions">
+            <a href="/books" class="btn btn-secondary">Back to Books</a>
+          </div>
+        </header>
+
+        <!-- Mobile Search Overlay -->
+        <div class="topbar-search-overlay" id="mobileSearchOverlay">
+          <div class="topbar-search-mobile">
+            <input
+              type="search"
+              id="mobileSearchInput"
+              placeholder="Quick search..."
+              autocomplete="off"
+            />
+            <button
+              class="close-search"
+              id="closeMobileSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
+          <div
+            class="breadcrumbs flex items-center gap-2 mb-6 text-sm text-gray-600 flex-wrap"
+          >
+            <a
+              href="/dashboard"
+              class="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+              >Dashboard</a
+            >
+            <span class="text-gray-400">/</span>
+            <a
+              href="/books"
+              class="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
+              >Books</a
+            >
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-semibold">Add Book</span>
+          </div>
+          <div
+            class="max-w-2xl mx-auto bg-white rounded-xl border border-gray-200 p-6 md:p-10 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <form id="bookForm">
+              <div class="mb-6">
+                <label
+                  for="title"
+                  class="block mb-2 text-sm font-semibold text-gray-900"
+                  >Title <span class="text-red-500">*</span></label
+                >
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  required
+                  placeholder="Enter book title"
+                  class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                />
+                <small class="block mt-1.5 text-xs text-gray-500 italic"
+                  >Enter the complete title of the book</small
+                >
+                <span
+                  class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                  id="titleError"
+                ></span>
+              </div>
+
+              <div class="mb-6">
+                <label
+                  for="authors"
+                  class="block mb-2 text-sm font-semibold text-gray-900"
+                  >Authors <span class="text-red-500">*</span></label
+                >
+                <input
+                  type="text"
+                  id="authors"
+                  name="authors"
+                  required
+                  placeholder="e.g., John Doe, Jane Smith"
+                  class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                />
+                <small class="block mt-1.5 text-xs text-gray-500 italic"
+                  >Separate multiple authors with commas</small
+                >
+                <span
+                  class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                  id="authorsError"
+                ></span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label
+                    for="publicationId"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    >Publication <span class="text-red-500">*</span></label
+                  >
+                  <select
+                    id="publicationId"
+                    name="publicationId"
+                    required
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300 cursor-pointer"
+                  >
+                    <option value="">Select Publication</option>
+                  </select>
+                  <span
+                    class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                    id="publicationIdError"
+                  ></span>
+                </div>
+
+                <div>
+                  <label
+                    for="vendorId"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    >Vendor <span class="text-red-500">*</span></label
+                  >
+                  <select
+                    id="vendorId"
+                    name="vendorId"
+                    required
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300 cursor-pointer"
+                  >
+                    <option value="">Select Vendor</option>
+                  </select>
+                  <span
+                    class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                    id="vendorIdError"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="mb-6">
+                <label
+                  for="isbn"
+                  class="block mb-2 text-sm font-semibold text-gray-900"
+                  >ISBN</label
+                >
+                <input
+                  type="text"
+                  id="isbn"
+                  name="isbn"
+                  placeholder="e.g., 978-0-123456-78-9"
+                  class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                />
+                <small class="block mt-1.5 text-xs text-gray-500 italic"
+                  >International Standard Book Number (optional)</small
+                >
+                <span
+                  class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                  id="isbnError"
+                ></span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label
+                    for="totalCopies"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    required
+                    >Total Copies <span class="text-red-500">*</span></label
+                  >
+                  <input
+                    type="number"
+                    id="totalCopies"
+                    name="totalCopies"
+                    min="1"
+                    required
+                    placeholder="10"
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                  />
+                  <small class="block mt-1.5 text-xs text-gray-500 italic"
+                    >Total number of copies purchased</small
+                  >
+                  <span
+                    class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                    id="totalCopiesError"
+                  ></span>
+                </div>
+
+                <div>
+                  <label
+                    for="availableCopies"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    >Available Copies <span class="text-red-500">*</span></label
+                  >
+                  <input
+                    type="number"
+                    id="availableCopies"
+                    name="availableCopies"
+                    min="0"
+                    required
+                    placeholder="10"
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                  />
+                  <small class="block mt-1.5 text-xs text-gray-500 italic"
+                    >Copies currently available for lending</small
+                  >
+                  <span
+                    class="form-error text-xs text-red-500 mt-1.5 block font-medium"
+                    id="availableCopiesError"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="mb-6">
+                <label
+                  for="categories"
+                  class="block mb-2 text-sm font-semibold text-gray-900"
+                  >Categories</label
+                >
+                <input
+                  type="text"
+                  id="categories"
+                  name="categories"
+                  placeholder="e.g., Computer Science, Programming"
+                  class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                />
+                <small class="block mt-1.5 text-xs text-gray-500 italic"
+                  >Separate categories with commas</small
+                >
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label
+                    for="purchaseDate"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    >Purchase Date</label
+                  >
+                  <input
+                    type="date"
+                    id="purchaseDate"
+                    name="purchaseDate"
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                  />
+                  <small class="block mt-1.5 text-xs text-gray-500 italic"
+                    >Date when the book was purchased</small
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="price"
+                    class="block mb-2 text-sm font-semibold text-gray-900"
+                    >Price</label
+                  >
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    class="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-base transition-all focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-100 hover:border-gray-300"
+                  />
+                  <small class="block mt-1.5 text-xs text-gray-500 italic"
+                    >Purchase price per copy (in dollars)</small
+                  >
+                </div>
+              </div>
+
+              <div
+                class="flex gap-4 justify-end mt-8 pt-6 border-t border-gray-200"
+              >
+                <a
+                  href="/books"
+                  class="px-6 py-3 bg-white text-gray-800 border-2 border-gray-300 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm hover:shadow-md"
+                  >Cancel</a
+                >
+                <button
+                  type="submit"
+                  class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  Add Book
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/scripts/add-book.js"></script>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subscriptions - Library Management System</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/scripts/tailwind-config.js"></script>
+  </head>
+  <body>
+    <div class="app-container flex min-h-screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>Library System</h2>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/books">Books</a></li>
+            <li><a href="/students">Students</a></li>
+            <li><a href="/allotments">Allotments</a></li>
+            <li><a href="/vendors">Vendors</a></li>
+            <li><a href="/publications">Publications</a></li>
+            <li>
+              <a href="/subscriptions" class="active">Subscriptions</a>
+            </li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay"></div>
+
+      <main class="main-content flex-1 flex flex-col">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+              ☰
+            </button>
+            <h1>Subscriptions</h1>
+          </div>
+          <div class="topbar-search">
+            <input
+              type="search"
+              id="topbarSearch"
+              placeholder="Search subscriptions by student..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            class="topbar-search-icon"
+            id="mobileSearchBtn"
+            aria-label="Search"
+            title="Search"
+          >
+            🔍
+          </button>
+          <div class="topbar-actions">
+            <button
+              class="btn btn-primary"
+              id="openSubscriptionModalBtn"
+              type="button"
+            >
+              Add Subscription
+            </button>
+          </div>
+        </header>
+
+        <!-- Mobile Search Overlay -->
+        <div class="topbar-search-overlay" id="mobileSearchOverlay">
+          <div class="topbar-search-mobile">
+            <input
+              type="search"
+              id="mobileSearchInput"
+              placeholder="Search subscriptions by student..."
+              autocomplete="off"
+            />
+            <button
+              class="close-search"
+              id="closeMobileSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
+          <div class="breadcrumbs">
+            <a href="/dashboard">Dashboard</a>
+            <span class="separator">/</span>
+            <span class="current">Subscriptions</span>
+          </div>
+          <div class="table-container">
+            <div class="table-header">
+              <h2>All Subscriptions</h2>
+              <div class="table-controls">
+                <select id="filterSelect" title="Filter subscriptions">
+                  <option value="all">All</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <div id="tableContainer"></div>
+            </div>
+            <div id="paginationContainer"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="subscriptionModal" class="hidden">
+      <div class="modal-overlay" id="subscriptionModalOverlay">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 id="subscriptionModalTitle">Add Subscription</h3>
+            <button class="modal-close subscription-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="subscriptionForm">
+              <div class="form-group">
+                <label for="subscriptionStudentId">Student</label>
+                <select id="subscriptionStudentId" name="studentId" required>
+                  <option value="">Select Student</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="subscriptionType">Type</label>
+                <select id="subscriptionType" name="type" required>
+                  <option value="">Select Type</option>
+                  <option value="Annual">Annual</option>
+                  <option value="Semester">Semester</option>
+                  <option value="Monthly">Monthly</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="subscriptionStartDate">Start Date</label>
+                  <input
+                    type="date"
+                    id="subscriptionStartDate"
+                    name="startDate"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="subscriptionEndDate">End Date</label>
+                  <input
+                    type="date"
+                    id="subscriptionEndDate"
+                    name="endDate"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="toggle-switch-label">
+                  <input
+                    type="checkbox"
+                    id="subscriptionActive"
+                    name="active"
+                    class="toggle-switch"
+                    checked
+                  />
+                  <span class="toggle-switch-slider"></span>
+                  <br />
+                  <span class="toggle-switch-text">Active</span>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary subscription-modal-close"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="subscriptionSubmitBtn"
+                >
+                  Add Subscription
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/scripts/subscriptions.js"></script>
+  </body>
+</html>

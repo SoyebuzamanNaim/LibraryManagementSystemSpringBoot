@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Library Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/scripts/tailwind-config.js"></script>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-container flex min-h-screen">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>Library System</h2>
+        </div>
+        <nav>
+          <ul class="sidebar-nav">
+            <li><a href="/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/books">Books</a></li>
+            <li><a href="/students">Students</a></li>
+            <li><a href="/allotments">Allotments</a></li>
+            <li><a href="/vendors">Vendors</a></li>
+            <li><a href="/publications">Publications</a></li>
+            <li><a href="/subscriptions">Subscriptions</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/profile">Profile</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay"></div>
+
+      <main class="main-content flex-1 flex flex-col">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+              ☰
+            </button>
+            <h1>Dashboard</h1>
+          </div>
+          <div class="topbar-search">
+            <input
+              type="search"
+              id="dashboardSearch"
+              placeholder="Search books, students, vendors..."
+              autocomplete="off"
+            />
+          </div>
+          <button
+            class="topbar-search-icon"
+            id="mobileSearchBtn"
+            aria-label="Search"
+            title="Search"
+          >
+            🔍
+          </button>
+          <div class="topbar-actions">
+            <span id="userName" class="user-name-badge"></span>
+          </div>
+        </header>
+
+        <!-- Mobile Search Overlay -->
+        <div class="topbar-search-overlay" id="mobileSearchOverlay">
+          <div class="topbar-search-mobile">
+            <input
+              type="search"
+              id="mobileSearchInput"
+              placeholder="Search books, students, vendors..."
+              autocomplete="off"
+            />
+            <button
+              class="close-search"
+              id="closeMobileSearch"
+              aria-label="Close search"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
+          <div
+            class="info-message mb-4 md:mb-6 p-3 md:p-4 rounded-lg border-2 border-blue-200 bg-blue-50 text-blue-700 text-sm md:text-base"
+          >
+            Welcome back! Here's a quick overview of your library system.
+            <span class="text-xs md:text-sm opacity-75 ml-1 hidden md:inline">
+              (Press Ctrl+/ for shortcuts)
+            </span>
+          </div>
+          <div
+            class="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8"
+          >
+            <div class="stat-card">
+              <h3>Total Books</h3>
+              <div class="value" id="totalBooks">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Available Books</h3>
+              <div class="value" id="availableBooks">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Total Students</h3>
+              <div class="value" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Active Allotments</h3>
+              <div class="value" id="activeAllotments">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Overdue Books</h3>
+              <div class="value" id="overdueBooks">0</div>
+            </div>
+          </div>
+
+          <div
+            class="history-list bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm"
+          >
+            <h2
+              class="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center gap-2"
+            >
+              <span>📜</span>
+              Recent Activity
+            </h2>
+            <div id="historyContainer"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/scripts/dashboard.js"></script>
+  </body>
+</html>
