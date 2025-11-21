@@ -1,7 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-
-
   // Update stats
   function updateStats() {
     const books = window.LMS.Books.getAll();
