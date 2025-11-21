@@ -33,10 +33,10 @@ public class LoginController {
         if (!valid) {
             redirectAttributes.addFlashAttribute("logindto", logindto);
             redirectAttributes.addFlashAttribute("loginError", "Invalid email or password");
-            return "redirect:/login";
+            return "redirect:/login?=false";
         }
         redirectAttributes.addFlashAttribute("email", logindto.email());
-        redirectAttributes.addFlashAttribute("loginMessage", "Login successful");
+        redirectAttributes.addFlashAttribute("loginMessage", "Welcome " + logindto.email() + "! Login successful");
         return "redirect:/dashboard?login=true";
     }
 }

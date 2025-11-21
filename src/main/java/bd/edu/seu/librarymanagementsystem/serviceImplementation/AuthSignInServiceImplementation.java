@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class AuthSignInServiceImplementation implements AuthSignInService {
-
+    //Memory storage for users
     private final CopyOnWriteArrayList<User> userStore = new CopyOnWriteArrayList<>();
 
     @Override

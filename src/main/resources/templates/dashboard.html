@@ -86,7 +86,8 @@
               <div class="text-xl" aria-hidden="true"></div>
               <div>
                 <p class="font-semibold" th:if="${param.login}">
-                  Welcome <span th:text="${username} ">Librarian</span>!
+                 
+                  <span th:text="${loginMessage}"></span>
                 </p>
                 <p class="text-blue-600 text-xs md:text-sm opacity-80">
                   Here's a quick overview of your library today.
