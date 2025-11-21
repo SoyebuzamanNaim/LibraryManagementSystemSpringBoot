@@ -488,87 +488,43 @@
    */
   const Auth = {
     /**
-     * Hash password using SHA-256
-     * @param {string} password - Plain text password
-     * @returns {Promise<string>} Hex-encoded hash
+     * Temporary development login bypass.
+     * Always treats the user as authenticated and returns a mock user object.
      */
     async hashPassword(password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hash = await crypto.subtle.digest("SHA-256", data);
-      return Array.from(new Uint8Array(hash))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+      return password;
     },
 
-    /**
-     * Verify password against hash
-     * @param {string} password - Plain text password
-     * @param {string} hash - Stored password hash
-     * @returns {Promise<boolean>} True if password matches
-     */
-    async verifyPassword(password, hash) {
-      const passwordHash = await this.hashPassword(password);
-      return passwordHash === hash;
+    async verifyPassword() {
+      return true;
     },
 
-    /**
-     * Authenticate user login
-     * @param {string} username - Username
-     * @param {string} password - Password
-     * @returns {Promise<Object>} {success: boolean, user?: Object, token?: string, message?: string}
-     */
-    async login(username, password) {
-      const users = Storage.getUsers();
-      const user = users.find((u) => u.username === username);
-
-      if (!user) {
-        return { success: false, message: "Invalid username or password" };
-      }
-
-      // First time login - set password
-      if (!user.passwordHash) {
-        const hash = await this.hashPassword(password);
-        user.passwordHash = hash;
-        Storage.setUsers(users);
-        const token = Storage.generateId();
-        Storage.setSession(token);
-        this.logHistory("Login", `User ${username} logged in (first time)`);
-        return { success: true, user, token };
-      }
-
-      const isValid = await this.verifyPassword(password, user.passwordHash);
-      if (!isValid) {
-        return { success: false, message: "Invalid username or password" };
-      }
-
-      const token = Storage.generateId();
-      Storage.setSession(token);
-      this.logHistory("Login", `User ${username} logged in`);
-      return { success: true, user, token };
+    async login(username) {
+      const user = this.getCurrentUser(username);
+      this.logHistory("Login", `User ${user.name} logged in (dev bypass)`);
+      return { success: true, user, token: "dev-token" };
     },
 
     logout() {
-      Storage.clearSession();
-      window.location.href = "/login";
+      window.location.href = "/dashboard";
     },
 
     isAuthenticated() {
-      return !!Storage.getSession();
+      return true;
     },
 
-    getCurrentUser() {
-      if (!this.isAuthenticated()) return null;
-      const users = Storage.getUsers();
-      // Return first admin user as current user (can be enhanced)
-      return users.find((u) => u.role === "admin") || users[0] || null;
+    getCurrentUser(username = "admin") {
+      return {
+        id: "dev-user",
+        username,
+        name: "Administrator",
+        email: "admin@example.com",
+        role: "admin",
+        createdAt: new Date().toISOString(),
+      };
     },
 
     requireAuth() {
-      if (!this.isAuthenticated()) {
-        window.location.href = "/login";
-        return false;
-      }
       return true;
     },
 

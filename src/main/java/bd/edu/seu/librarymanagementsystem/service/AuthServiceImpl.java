@@ -1,7 +1,5 @@
 package bd.edu.seu.librarymanagementsystem.service;
 
-
-
-public interface AllotmentService {
+public class AuthServiceImpl {
 
 }

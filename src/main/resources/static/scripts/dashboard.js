@@ -1,10 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  if (!window.LMS.Auth.requireAuth()) return;
 
-  const user = window.LMS.Auth.getCurrentUser();
-  if (user) {
-    document.getElementById("userName").textContent = user.name;
-  }
+
 
   // Update stats
   function updateStats() {

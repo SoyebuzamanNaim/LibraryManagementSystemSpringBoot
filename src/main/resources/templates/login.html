@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,7 +10,7 @@
     <div class="login-container">
       <div class="login-box">
         <h1>Library Management System</h1>
-        <form id="loginForm">
+        <form id="loginForm" th:action="@{/login}" method="post">
           <div class="form-group">
             <label for="username">Username</label>
             <input
