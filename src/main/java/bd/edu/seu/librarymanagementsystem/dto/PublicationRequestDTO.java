@@ -1,0 +1,15 @@
+package bd.edu.seu.librarymanagementsystem.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PublicationRequestDTO {
+    private String name;
+    private String address;
+}
