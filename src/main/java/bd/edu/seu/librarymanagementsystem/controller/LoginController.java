@@ -2,12 +2,15 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.LoginRequestDTO;
 import bd.edu.seu.librarymanagementsystem.service.AuthLoginService;
+import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
+import bd.edu.seu.librarymanagementsystem.util.SessionManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class LoginController {
@@ -19,7 +22,10 @@ public class LoginController {
     }
 
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (SessionManager.isLoggedIn(session)) {
+            return RedirectUtil.redirectToDashboard(redirectAttributes);
+        }
         if (!model.containsAttribute("logindto")) {
             model.addAttribute("logindto", new LoginRequestDTO("", ""));
         }
@@ -28,15 +34,16 @@ public class LoginController {
 
     @PostMapping("/login")
     public String login(@ModelAttribute("logindto") LoginRequestDTO logindto,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes, HttpSession session) {
         boolean valid = authLoginService.validateUser(logindto.email(), logindto.password());
         if (!valid) {
             redirectAttributes.addFlashAttribute("logindto", logindto);
             redirectAttributes.addFlashAttribute("loginError", "Invalid email or password");
-            return "redirect:/login?=false";
+            return RedirectUtil.redirectToLogin(redirectAttributes);
         }
+        SessionManager.setEmail(session, logindto.email());
         redirectAttributes.addFlashAttribute("email", logindto.email());
         redirectAttributes.addFlashAttribute("loginMessage", "Welcome " + logindto.email() + "! Login successful");
-        return "redirect:/dashboard?login=true";
+        return RedirectUtil.redirectToDashboard(redirectAttributes);
     }
 }

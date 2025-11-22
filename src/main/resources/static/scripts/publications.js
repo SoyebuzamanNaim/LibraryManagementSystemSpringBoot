@@ -1,181 +1,103 @@
-let allPublications = [];
-let currentPage = 1;
-let editingPublicationId = null;
-const pageSize = 10;
+// Modal handling
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("publicationModal");
+  const openBtn = document.getElementById("openPublicationModalBtn");
+  const closeBtns = document.querySelectorAll(".publication-modal-close");
+  const overlay = document.getElementById("publicationModalOverlay");
+  const form = document.getElementById("publicationForm");
 
-function loadPublications() {
-  allPublications = window.LMS.Publications.getAll();
-  applyFilters();
-}
-
-function applyFilters() {
-  const searchInput =
-    document.getElementById("topbarSearch") ||
-    document.getElementById("searchInput");
-  const searchTerm = (searchInput ? searchInput.value : "").toLowerCase();
-  let filtered = allPublications;
-
-  if (searchTerm) {
-    filtered = allPublications.filter(
-      (pub) =>
-        pub.name.toLowerCase().includes(searchTerm) ||
-        (pub.address && pub.address.toLowerCase().includes(searchTerm))
-    );
+  function openModal() {
+    modal.classList.remove("hidden");
+    document.getElementById("publicationModalTitle").textContent =
+      "Add Publication";
+    document.getElementById("publicationSubmitBtn").textContent =
+      "Add Publication";
+    form.action = "/publications";
+    form.reset();
+    document.getElementById("publicationId").value = "";
   }
 
-  const pagination = window.LMS.Table.paginate(filtered, currentPage, pageSize);
-  renderTable(pagination.data);
-  window.LMS.Table.createPagination(
-    "paginationContainer",
-    pagination,
-    changePage
-  );
-}
+  function closeModal() {
+    modal.classList.add("hidden");
+    form.reset();
+  }
 
-function renderTable(publications) {
-  const columns = [
-    { key: "name", label: "Name" },
-    { key: "address", label: "Address", hideOnMobile: true },
-  ];
+  if (openBtn) {
+    openBtn.addEventListener("click", openModal);
+  }
 
-  const actions = [
-    {
-      label: "Edit",
-      class: "btn-secondary",
-      onclick: "editPublication",
-    },
-    {
-      label: "Delete",
-      class: "btn-danger",
-      onclick: "deletePublication",
-    },
-  ];
+  closeBtns.forEach((btn) => {
+    btn.addEventListener("click", closeModal);
+  });
 
-  window.LMS.Table.createTable(
-    "tableContainer",
-    publications,
-    columns,
-    actions
-  );
-}
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target.id === "publicationModalOverlay") {
+        closeModal();
+      }
+    });
+  }
 
-function changePage(page) {
-  currentPage = page;
-  applyFilters();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
+  // Search functionality - submit form on Enter key or when cleared
+  const searchInput = document.getElementById("topbarSearch");
+  const searchForm = searchInput?.closest("form");
+  if (searchInput && searchForm) {
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchForm.submit();
+      }
+    });
 
-function showAddPublicationModal() {
-  editingPublicationId = null;
-  document.getElementById("publicationModalTitle").textContent =
-    "Add Publication";
-  document.getElementById("publicationSubmitBtn").textContent =
-    "Add Publication";
-  document.getElementById("publicationForm").reset();
-  document.getElementById("publicationModal").classList.remove("hidden");
-}
+    // Submit when search is cleared
+    searchInput.addEventListener("input", function () {
+      if (this.value.trim() === "") {
+        window.location.href = "/publications";
+      }
+    });
+  }
 
-function editPublication(btn, publication) {
-  editingPublicationId = publication.id;
+  // Mobile search functionality
+  const mobileSearchInput = document.getElementById("mobileSearchInput");
+  const mobileSearchForm = mobileSearchInput?.closest("form");
+  if (mobileSearchInput && mobileSearchForm) {
+    mobileSearchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        mobileSearchForm.submit();
+      }
+    });
+  }
+
+  // Initialize delete confirmation modal
+  if (window.DeleteModal) {
+    window.DeleteModal.initDeleteForms(
+      "delete-publication-form",
+      "publication"
+    );
+  }
+});
+
+function editPublication(id, name, address) {
+  const modal = document.getElementById("publicationModal");
+  const form = document.getElementById("publicationForm");
   document.getElementById("publicationModalTitle").textContent =
     "Edit Publication";
   document.getElementById("publicationSubmitBtn").textContent =
     "Update Publication";
-
-  document.getElementById("publicationName").value = publication.name || "";
-  document.getElementById("publicationAddress").value =
-    publication.address || "";
-
-  document.getElementById("publicationModal").classList.remove("hidden");
+  document.getElementById("publicationId").value = id;
+  document.getElementById("publicationName").value = name || "";
+  document.getElementById("publicationAddress").value = address || "";
+  form.action = "/publications/" + id + "/update";
+  modal.classList.remove("hidden");
 }
 
-function deletePublication(btn, publication) {
-  window.LMS.UI.confirmDelete(
-    `Are you sure you want to delete "${publication.name}"?`,
-    () => {
-      const result = window.LMS.Publications.delete(publication.id);
-      if (result === true) {
-        window.LMS.UI.showToast("Publication deleted successfully", "success");
-        loadPublications();
-      } else if (result && result.error) {
-        window.LMS.UI.showToast(result.error, "error");
-      } else {
-        window.LMS.UI.showToast("Failed to delete publication", "error");
-      }
-    }
-  );
-}
-
-function closePublicationModal() {
-  document.getElementById("publicationModal").classList.add("hidden");
-  document.getElementById("publicationForm").reset();
-  editingPublicationId = null;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (!window.LMS.Auth.requireAuth()) return;
-
-  loadPublications();
-
-  const debouncedSearch = window.LMS.UI.debounce(applyFilters, 300);
-  const topbarSearch = document.getElementById("topbarSearch");
-  if (topbarSearch) {
-    topbarSearch.addEventListener("input", () => {
-      currentPage = 1;
-      debouncedSearch();
-    });
+// Handle edit button clicks
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("edit-publication-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const name = e.target.getAttribute("data-name") || "";
+    const address = e.target.getAttribute("data-address") || "";
+    editPublication(id, name, address);
   }
-
-  document.getElementById("publicationForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const formData = {
-      name: document.getElementById("publicationName").value.trim(),
-      address: document.getElementById("publicationAddress").value.trim(),
-    };
-
-    if (!formData.name) {
-      window.LMS.UI.showToast("Name is required", "error");
-      return;
-    }
-
-    let result;
-    if (editingPublicationId) {
-      result = window.LMS.Publications.update(editingPublicationId, formData);
-      if (result) {
-        window.LMS.UI.showToast("Publication updated successfully", "success");
-      } else {
-        window.LMS.UI.showToast("Failed to update publication", "error");
-        return;
-      }
-    } else {
-      result = window.LMS.Publications.create(formData);
-      if (result) {
-        window.LMS.UI.showToast("Publication added successfully", "success");
-      } else {
-        window.LMS.UI.showToast("Failed to add publication", "error");
-        return;
-      }
-    }
-
-    closePublicationModal();
-    loadPublications();
-  });
-
-  const openModalButton = document.getElementById("openPublicationModalBtn");
-  if (openModalButton) {
-    openModalButton.addEventListener("click", showAddPublicationModal);
-  }
-
-  document
-    .querySelectorAll(".publication-modal-close")
-    .forEach((btn) => btn.addEventListener("click", closePublicationModal));
-
-  document
-    .getElementById("publicationModalOverlay")
-    .addEventListener("click", (e) => {
-      if (e.target.id === "publicationModalOverlay") {
-        closePublicationModal();
-      }
-    });
 });

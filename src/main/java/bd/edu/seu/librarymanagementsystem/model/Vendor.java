@@ -15,7 +15,7 @@ public class Vendor {
 
     private String id;
     private String name;
-    private String contact;
+    private String email;
     private String phone;
     private String address;
     private LocalDate createdAt;

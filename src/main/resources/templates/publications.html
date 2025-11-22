@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,14 +38,21 @@
             </button>
             <h1>Publications</h1>
           </div>
-          <div class="topbar-search">
+          <form class="topbar-search" th:action="@{/publications}" method="get">
             <input
               type="search"
               id="topbarSearch"
+              name="search"
               placeholder="Search publications by name..."
               autocomplete="off"
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -67,21 +74,33 @@
 
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
-          <div class="topbar-search-mobile">
+          <form
+            class="topbar-search-mobile"
+            th:action="@{/publications}"
+            method="get"
+          >
             <input
               type="search"
               id="mobileSearchInput"
+              name="search"
               placeholder="Search publications by name..."
               autocomplete="off"
+              th:value="${searchTerm}"
             />
             <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+            <button
+              type="button"
               class="close-search"
               id="closeMobileSearch"
               aria-label="Close search"
             >
               ✕
             </button>
-          </div>
+          </form>
         </div>
 
         <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
@@ -90,20 +109,92 @@
             <span class="separator">/</span>
             <span class="current">Publications</span>
           </div>
+
+          <!-- Success/Error Messages -->
+          <div
+            th:if="${successMessage}"
+            class="success-message bg-green-50 border-green-200 text-green-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${successMessage}"
+          ></div>
+          <div
+            th:if="${errorMessage}"
+            class="alert error bg-red-50 border-red-200 text-red-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${errorMessage}"
+          ></div>
+
           <div class="table-container">
             <div class="table-header">
               <h2>All Publications</h2>
               <div class="table-controls"></div>
             </div>
             <div class="table-wrapper">
-              <div id="tableContainer"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Created At</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(publications)}">
+                    <td colspan="4" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📭</div>
+                        <h3 class="text-lg font-semibold">
+                          No publications found
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Add Publication" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="publication : ${publications}">
+                    <td th:text="${publication.name}"></td>
+                    <td th:text="${publication.address ?: '-'}"></td>
+                    <td
+                      th:text="${publication.createdAt != null ? #temporals.format(publication.createdAt, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-small edit-publication-btn"
+                          th:data-id="${publication.id}"
+                          th:data-name="${publication.name}"
+                          th:data-address="${publication.address ?: '-'}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          th:action="@{/publications/{id}/delete(id=${publication.id})}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-publication-form"
+                        >
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div id="paginationContainer"></div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- Add/Edit Publication Modal -->
     <div id="publicationModal" class="hidden">
       <div class="modal-overlay" id="publicationModalOverlay">
         <div class="modal">
@@ -114,10 +205,21 @@
             </button>
           </div>
           <div class="modal-body">
-            <form id="publicationForm">
+            <form
+              id="publicationForm"
+              th:action="@{/publications}"
+              method="post"
+            >
+              <input type="hidden" id="publicationId" name="id" />
               <div class="form-group">
                 <label for="publicationName">Name </label>
-                <input type="text" id="publicationName" name="name" required />
+                <input
+                  type="text"
+                  id="publicationName"
+                  name="name"
+                  th:value="${publicationRequestDTO?.name}"
+                  required
+                />
               </div>
               <div class="form-group">
                 <label for="publicationAddress">Address</label>
@@ -125,6 +227,7 @@
                   id="publicationAddress"
                   name="address"
                   rows="3"
+                  th:text="${publicationRequestDTO?.address}"
                 ></textarea>
               </div>
               <div class="form-actions">
@@ -149,6 +252,7 @@
     </div>
 
     <script src="/app.js"></script>
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/publications.js"></script>
   </body>
 </html>

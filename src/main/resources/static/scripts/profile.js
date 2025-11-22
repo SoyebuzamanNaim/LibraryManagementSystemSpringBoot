@@ -125,14 +125,5 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      window.LMS.UI.confirmDelete("Are you sure you want to logout?", () => {
-        window.LMS.Auth.logout();
-      });
-    });
-  }
-
   window.LMS.QuickSearch.init("topbarSearch");
 });

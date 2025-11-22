@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.serviceImplementation;
 
 import bd.edu.seu.librarymanagementsystem.model.User;
 import bd.edu.seu.librarymanagementsystem.service.AuthSignInService;
+import bd.edu.seu.librarymanagementsystem.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class AuthSignInServiceImplementation implements AuthSignInService {
-    //Memory storage for users
+    // Memory storage for users
     private final CopyOnWriteArrayList<User> userStore = new CopyOnWriteArrayList<>();
 
     @Override
@@ -30,10 +31,10 @@ public class AuthSignInServiceImplementation implements AuthSignInService {
 
     @Override
     public void deleteUser(String email) {
-        if (!hasText(email)) {
+        if (StringUtils.isBlank(email)) {
             throw new IllegalArgumentException("Email must not be blank");
         }
-        userStore.removeIf(user -> email.equalsIgnoreCase(user.getEmail()));
+        userStore.removeIf(user -> email.trim().equals(user.getEmail()));
     }
 
     @Override
@@ -46,21 +47,17 @@ public class AuthSignInServiceImplementation implements AuthSignInService {
             System.out.println("User must not be null");
             return;
         }
-        if (!hasText(user.getUsername())) {
+        if (StringUtils.isBlank(user.getUsername())) {
             System.out.println("Username must not be blank");
             return;
         }
-        if (!hasText(user.getPassword())) {
+        if (StringUtils.isBlank(user.getPassword())) {
             System.out.println("Password must not be blank");
             return;
         }
-        if (!hasText(user.getEmail())) {
+        if (StringUtils.isBlank(user.getEmail())) {
             System.out.println("Email must not be blank");
             return;
         }
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.trim().isEmpty();
     }
 }

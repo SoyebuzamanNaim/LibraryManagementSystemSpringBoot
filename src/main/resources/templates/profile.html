@@ -55,7 +55,9 @@
             🔍
           </button>
           <div class="topbar-actions">
-            <button class="btn btn-danger" id="logoutButton">Logout</button>
+            <form th:action="@{/logout}" method="post" >
+              <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
           </div>
         </header>
 

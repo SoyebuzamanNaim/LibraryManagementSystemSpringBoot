@@ -3,6 +3,9 @@ package bd.edu.seu.librarymanagementsystem.controller;
 import bd.edu.seu.librarymanagementsystem.dto.SignInRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.User;
 import bd.edu.seu.librarymanagementsystem.service.AuthSignInService;
+import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
+import bd.edu.seu.librarymanagementsystem.util.SessionManager;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +23,10 @@ public class SignInController {
     }
 
     @GetMapping("/signin")
-    public String signIn(Model model) {
+    public String signIn(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (SessionManager.isLoggedIn(session)) {
+            return RedirectUtil.redirectToDashboard(redirectAttributes);
+        }
         if (!model.containsAttribute("signindto")) {
             model.addAttribute("signindto", new SignInRequestDTO("", "", ""));
         }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -38,14 +38,21 @@
             </button>
             <h1>Vendors</h1>
           </div>
-          <div class="topbar-search">
+          <form class="topbar-search" th:action="@{/vendors}" method="get">
             <input
               type="search"
               id="topbarSearch"
-              placeholder="Search vendors by name, contact..."
+              name="search"
+              placeholder="Search vendors by name, email..."
               autocomplete="off"
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -67,21 +74,33 @@
 
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
-          <div class="topbar-search-mobile">
+          <form
+            class="topbar-search-mobile"
+            th:action="@{/vendors}"
+            method="get"
+          >
             <input
               type="search"
               id="mobileSearchInput"
-              placeholder="Search vendors by name, contact..."
+              name="search"
+              placeholder="Search vendors by name, email..."
               autocomplete="off"
+              th:value="${searchTerm}"
             />
             <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+            <button
+              type="button"
               class="close-search"
               id="closeMobileSearch"
               aria-label="Close search"
             >
               ✕
             </button>
-          </div>
+          </form>
         </div>
 
         <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
@@ -90,20 +109,96 @@
             <span class="separator">/</span>
             <span class="current">Vendors</span>
           </div>
+
+          <!-- Success/Error Messages -->
+          <div
+            th:if="${successMessage}"
+            class="success-message bg-green-50 border-green-200 text-green-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${successMessage}"
+          ></div>
+          <div
+            th:if="${errorMessage}"
+            class="alert error bg-red-50 border-red-200 text-red-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${errorMessage}"
+          ></div>
+
           <div class="table-container">
             <div class="table-header">
               <h2>All Vendors</h2>
               <div class="table-controls"></div>
             </div>
             <div class="table-wrapper">
-              <div id="tableContainer"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Created At</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(vendors)}">
+                    <td colspan="6" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📭</div>
+                        <h3 class="text-lg font-semibold">No vendors found</h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Add Vendor" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="vendor : ${vendors}">
+                    <td th:text="${vendor.name}"></td>
+                    <td th:text="${vendor.email ?: '-'}"></td>
+                    <td th:text="${vendor.phone ?: '-'}"></td>
+                    <td th:text="${vendor.address ?: '-'}"></td>
+                    <td
+                      th:text="${vendor.createdAt != null ? #temporals.format(vendor.createdAt, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-small edit-vendor-btn"
+                          th:data-id="${vendor.id}"
+                          th:data-name="${vendor.name}"
+                          th:data-email="${vendor.email ?: ''}"
+                          th:data-phone="${vendor.phone ?: ''}"
+                          th:data-address="${vendor.address ?: ''}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          th:action="@{/vendors/{id}/delete(id=${vendor.id})}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-vendor-form"
+                        >
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div id="paginationContainer"></div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- Add/Edit Vendor Modal -->
     <div id="vendorModal" class="hidden">
       <div class="modal-overlay" id="vendorModalOverlay">
         <div class="modal">
@@ -114,22 +209,44 @@
             </button>
           </div>
           <div class="modal-body">
-            <form id="vendorForm">
+            <form id="vendorForm" th:action="@{/vendors}" method="post">
+              <input type="hidden" id="vendorId" name="id" />
               <div class="form-group">
                 <label for="vendorName">Name </label>
-                <input type="text" id="vendorName" name="name" required />
+                <input
+                  type="text"
+                  id="vendorName"
+                  name="name"
+                  th:value="${vendorRequestDTO?.name}"
+                  required
+                />
               </div>
               <div class="form-group">
-                <label for="vendorContact">Contact Person</label>
-                <input type="text" id="vendorContact" name="contact" />
+                <label for="vendorEmail">Email</label>
+                <input
+                  type="email"
+                  id="vendorEmail"
+                  name="email"
+                  th:value="${vendorRequestDTO?.email}"
+                />
               </div>
               <div class="form-group">
                 <label for="vendorPhone">Phone</label>
-                <input type="tel" id="vendorPhone" name="phone" />
+                <input
+                  type="tel"
+                  id="vendorPhone"
+                  name="phone"
+                  th:value="${vendorRequestDTO?.phone}"
+                />
               </div>
               <div class="form-group">
                 <label for="vendorAddress">Address</label>
-                <textarea id="vendorAddress" name="address" rows="3"></textarea>
+                <textarea
+                  id="vendorAddress"
+                  name="address"
+                  rows="3"
+                  th:text="${vendorRequestDTO?.address}"
+                ></textarea>
               </div>
               <div class="form-actions">
                 <button
@@ -153,6 +270,7 @@
     </div>
 
     <script src="/app.js"></script>
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/vendors.js"></script>
   </body>
 </html>
