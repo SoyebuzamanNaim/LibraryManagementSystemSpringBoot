@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.PublicationRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.Publication;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.PublicationService;
 import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
 import bd.edu.seu.librarymanagementsystem.util.SessionManager;
@@ -18,9 +19,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PublicationController {
 
     private final PublicationService publicationService;
+    private final ActivityService activityService;
 
-    public PublicationController(PublicationService publicationService) {
+    public PublicationController(PublicationService publicationService, ActivityService activityService) {
         this.publicationService = publicationService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/publications")
@@ -48,7 +51,9 @@ public class PublicationController {
             Publication publication = new Publication();
             publication.setName(requestDTO.name());
             publication.setAddress(requestDTO.address());
-            publicationService.savePublication(publication);
+            Publication savedPublication = publicationService.savePublication(publication);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Publication Added", "Added publication: " + savedPublication.getName(), actor);
             redirectAttributes.addFlashAttribute("successMessage", "Publication created successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -67,7 +72,11 @@ public class PublicationController {
             Publication publication = new Publication();
             publication.setName(requestDTO.name());
             publication.setAddress(requestDTO.address());
+            Publication existingPublication = publicationService.getPublicationById(id);
+            String publicationName = existingPublication != null ? existingPublication.getName() : "Unknown";
             publicationService.updatePublication(id, publication);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Publication Updated", "Updated publication: " + publicationName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Publication updated successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -82,7 +91,11 @@ public class PublicationController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         try {
+            Publication publication = publicationService.getPublicationById(id);
+            String publicationName = publication != null ? publication.getName() : "Unknown";
             publicationService.deletePublication(id);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Publication Deleted", "Deleted publication: " + publicationName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Publication deleted successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

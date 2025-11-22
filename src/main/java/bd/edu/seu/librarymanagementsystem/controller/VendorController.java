@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.VendorRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.Vendor;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.VendorService;
 import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
 import bd.edu.seu.librarymanagementsystem.util.SessionManager;
@@ -18,9 +19,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class VendorController {
 
     private final VendorService vendorService;
+    private final ActivityService activityService;
 
-    public VendorController(VendorService vendorService) {
+    public VendorController(VendorService vendorService, ActivityService activityService) {
         this.vendorService = vendorService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/vendors")
@@ -50,7 +53,9 @@ public class VendorController {
             vendor.setEmail(requestDTO.email());
             vendor.setPhone(requestDTO.phone());
             vendor.setAddress(requestDTO.address());
-            vendorService.saveVendor(vendor);
+            Vendor savedVendor = vendorService.saveVendor(vendor);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Vendor Added", "Added vendor: " + savedVendor.getName(), actor);
             redirectAttributes.addFlashAttribute("successMessage", "Vendor created successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -71,7 +76,11 @@ public class VendorController {
             vendor.setEmail(requestDTO.email());
             vendor.setPhone(requestDTO.phone());
             vendor.setAddress(requestDTO.address());
+            Vendor existingVendor = vendorService.getVendorById(id);
+            String vendorName = existingVendor != null ? existingVendor.getName() : "Unknown";
             vendorService.updateVendor(id, vendor);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Vendor Updated", "Updated vendor: " + vendorName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Vendor updated successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -86,7 +95,11 @@ public class VendorController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         try {
+            Vendor vendor = vendorService.getVendorById(id);
+            String vendorName = vendor != null ? vendor.getName() : "Unknown";
             vendorService.deleteVendor(id);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Vendor Deleted", "Deleted vendor: " + vendorName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Vendor deleted successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

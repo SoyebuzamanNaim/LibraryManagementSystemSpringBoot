@@ -25,7 +25,6 @@
             <li>
               <a href="/subscriptions" class="active">Subscriptions</a>
             </li>
-            <li><a href="/reports">Reports</a></li>
             <li><a href="/profile">Profile</a></li>
           </ul>
         </nav>
@@ -247,7 +246,7 @@
                   <option
                     th:each="student : ${students}"
                     th:value="${student.id}"
-                    th:text="|${student.name} (${student.roll})|"
+                    th:text="${student.name + ' (' + student.roll + ')'}"
                   ></option>
                 </select>
               </div>

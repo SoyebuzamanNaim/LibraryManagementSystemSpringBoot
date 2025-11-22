@@ -23,7 +23,6 @@
             <li><a href="/vendors">Vendors</a></li>
             <li><a href="/publications">Publications</a></li>
             <li><a href="/subscriptions">Subscriptions</a></li>
-            <li><a href="/reports">Reports</a></li>
             <li><a href="/profile">Profile</a></li>
           </ul>
         </nav>
@@ -85,9 +84,9 @@
             >
               <div class="text-xl" aria-hidden="true"></div>
               <div>
-                <p class="font-semibold" th:if="${param.login}">
-                 
-                  <span th:text="${loginMessage}"></span>
+                <p class="font-semibold">
+                  Welcome <span th:text="${userName != null ? userName : 'User'}"></span>
+                  <span th:if="${param.login}" th:text="${loginMessage}"></span>
                 </p>
                 <p class="text-blue-600 text-xs md:text-sm opacity-80">
                   Here's a quick overview of your library today.
@@ -100,23 +99,48 @@
           >
             <div class="stat-card">
               <h3>Total Books</h3>
-              <div class="value" id="totalBooks">0</div>
+              <div
+                class="value"
+                th:text="${stats != null ? stats.totalBooks() : 0}"
+              >
+                0
+              </div>
             </div>
             <div class="stat-card">
               <h3>Available Books</h3>
-              <div class="value" id="availableBooks">0</div>
+              <div
+                class="value"
+                th:text="${availableBooks != null ? availableBooks : 0}"
+              >
+                0
+              </div>
             </div>
             <div class="stat-card">
               <h3>Total Students</h3>
-              <div class="value" id="totalStudents">0</div>
+              <div
+                class="value"
+                th:text="${stats != null ? stats.totalStudents() : 0}"
+              >
+                0
+              </div>
             </div>
             <div class="stat-card">
               <h3>Active Allotments</h3>
-              <div class="value" id="activeAllotments">0</div>
+              <div
+                class="value"
+                th:text="${stats != null ? stats.activeAllotments() : 0}"
+              >
+                0
+              </div>
             </div>
             <div class="stat-card">
               <h3>Overdue Books</h3>
-              <div class="value" id="overdueBooks">0</div>
+              <div
+                class="value"
+                th:text="${stats != null ? stats.overdueAllotments() : 0}"
+              >
+                0
+              </div>
             </div>
           </div>
 
@@ -129,7 +153,32 @@
               <span>📜</span>
               Recent Activity
             </h2>
-            <div id="historyContainer"></div>
+            <div id="historyContainer">
+              <div
+                th:if="${activities == null or activities.isEmpty()}"
+                class="empty-state"
+              >
+                <p>No recent activity</p>
+              </div>
+              <div th:if="${activities != null and !activities.isEmpty()}">
+                <div th:each="activity : ${activities}" class="history-item">
+                  <div class="history-item-header">
+                    <span class="history-action" th:text="${activity.action}"
+                      >Action</span
+                    >
+                    <span
+                      class="history-time"
+                      th:text="${activity.timestamp != null ? #temporals.format(activity.timestamp, 'dd MMM yyyy (HH:mm)') : '-'}"
+                      >Time</span
+                    >
+                  </div>
+                  <div class="history-details">
+                    <strong th:text="${activity.actor}">Actor</strong>:
+                    <span th:text="${activity.details}">Details</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>

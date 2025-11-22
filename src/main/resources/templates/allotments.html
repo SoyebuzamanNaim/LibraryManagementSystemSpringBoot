@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,7 +23,6 @@
             <li><a href="/vendors">Vendors</a></li>
             <li><a href="/publications">Publications</a></li>
             <li><a href="/subscriptions">Subscriptions</a></li>
-            <li><a href="/reports">Reports</a></li>
             <li><a href="/profile">Profile</a></li>
           </ul>
         </nav>
@@ -38,14 +37,20 @@
             </button>
             <h1>Allotments</h1>
           </div>
-          <div class="topbar-search">
+          <form class="topbar-search" th:action="@{/allotments}" method="get">
             <input
               type="search"
               id="topbarSearch"
+              name="search"
               placeholder="Search allotments by book, student..."
-              autocomplete="off"
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -68,19 +73,22 @@
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
           <div class="topbar-search-mobile">
-            <input
-              type="search"
-              id="mobileSearchInput"
-              placeholder="Search allotments by book, student..."
-              autocomplete="off"
-            />
-            <button
-              class="close-search"
-              id="closeMobileSearch"
-              aria-label="Close search"
-            >
-              ✕
-            </button>
+            <form th:action="@{/allotments}" method="get">
+              <input
+                type="search"
+                id="mobileSearchInput"
+                name="search"
+                placeholder="Search allotments by book, student..."
+                th:value="${searchTerm}"
+              />
+              <button
+                class="close-search"
+                id="closeMobileSearch"
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </form>
           </div>
         </div>
 
@@ -90,27 +98,147 @@
             <span class="separator">/</span>
             <span class="current">Allotments</span>
           </div>
+
+          <!-- Success/Error Messages -->
+          <div
+            th:if="${successMessage}"
+            class="success-message bg-green-50 border-green-200 text-green-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${successMessage}"
+          ></div>
+          <div
+            th:if="${errorMessage}"
+            class="alert error bg-red-50 border-red-200 text-red-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${errorMessage}"
+          ></div>
+
           <div class="table-container">
             <div class="table-header">
               <h2>All Allotments</h2>
-              <div class="table-controls">
-                <select id="filterSelect" title="Filter allotments">
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="overdue">Overdue</option>
-                  <option value="returned">Returned</option>
-                </select>
-              </div>
+              <div class="table-controls"></div>
             </div>
             <div class="table-wrapper">
-              <div id="tableContainer"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Book</th>
+                    <th>Student</th>
+                    <th>Allotted Date</th>
+                    <th>Due Date</th>
+                    <th>Returned Date</th>
+                    <th>Status</th>
+                    <th>Fine</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(allotments)}">
+                    <td colspan="8" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📚</div>
+                        <h3 class="text-lg font-semibold">
+                          No allotments found
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Allot New Book" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="allotment : ${allotments}">
+                    <td th:text="${allotment.bookTitle}"></td>
+                    <td>
+                      <div
+                        th:text="${allotment.studentName + ' (' + allotment.studentRoll + ')'}"
+                      ></div>
+                    </td>
+                    <td
+                      th:text="${allotment.allottedAt != null ? #temporals.format(allotment.allottedAt, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td
+                      th:text="${allotment.dueAt != null ? #temporals.format(allotment.dueAt, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td
+                      th:text="${allotment.returnedAt != null ? #temporals.format(allotment.returnedAt, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td>
+                      <span
+                        th:if="${allotment.returnedAt != null}"
+                        class="badge badge-success"
+                        >Returned</span
+                      >
+                      <span
+                        th:if="${allotment.returnedAt == null and allotment.isOverdue != null and allotment.isOverdue}"
+                        class="badge badge-danger"
+                        >Overdue</span
+                      >
+                      <span
+                        th:if="${allotment.returnedAt == null and (allotment.isOverdue == null or !allotment.isOverdue)}"
+                        class="badge badge-info"
+                        >Active</span
+                      >
+                    </td>
+                    <td>
+                      <span
+                        th:if="${allotment.fineAmount != null and allotment.fineAmount > 0}"
+                        th:text="${allotment.fineAmount + ' taka'}"
+                      ></span>
+                      <span
+                        th:if="${allotment.fineAmount == null or allotment.fineAmount == 0}"
+                        >-</span
+                      >
+                    </td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <form
+                          th:if="${allotment.returnedAt == null}"
+                          th:action="@{/allotments/return}"
+                          method="post"
+                          style="display: inline"
+                        >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${allotment.id}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-success btn-small"
+                          >
+                            Return
+                          </button>
+                        </form>
+                        <form
+                          th:action="@{/allotments/delete}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-allotment-form"
+                        >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${allotment.id}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div id="paginationContainer"></div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- Add Allotment Modal -->
     <div id="allotModal" class="hidden">
       <div class="modal-overlay" id="allotModalOverlay">
         <div class="modal">
@@ -121,22 +249,37 @@
             </button>
           </div>
           <div class="modal-body">
-            <form id="allotForm">
+            <form id="allotForm" th:action="@{/allotments}" method="post">
               <div class="form-group">
                 <label for="allotBookId">Book </label>
                 <select id="allotBookId" name="bookId" required>
                   <option value="">Select Book</option>
+                  <option
+                    th:each="book : ${books}"
+                    th:value="${book.id}"
+                    th:disabled="${book.availableCopies == null or book.availableCopies == 0}"
+                    th:text="${book.title + ' (Available: ' + (book.availableCopies != null ? book.availableCopies : 0) + ')'}"
+                  ></option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="allotStudentId">Student </label>
                 <select id="allotStudentId" name="studentId" required>
                   <option value="">Select Student</option>
+                  <option
+                    th:each="student : ${students}"
+                    th:value="${student.id}"
+                    th:text="${student.name + ' (' + student.roll + ')'}"
+                  ></option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="allotDueDate">Due Date </label>
-                <input type="date" id="allotDueDate" name="dueDate" required />
+                <input type="datetime-local" id="allotDueDate" name="dueAt" />
+                <small class="text-gray-500"
+                  >Leave empty to set 14 days from now (maximum loan
+                  period)</small
+                >
               </div>
               <div class="form-actions">
                 <button
@@ -155,7 +298,7 @@
       </div>
     </div>
 
-    <script src="/app.js"></script>
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/allotments.js"></script>
   </body>
 </html>

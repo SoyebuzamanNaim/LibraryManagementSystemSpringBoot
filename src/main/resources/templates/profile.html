@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,7 +23,6 @@
             <li><a href="/vendors">Vendors</a></li>
             <li><a href="/publications">Publications</a></li>
             <li><a href="/subscriptions">Subscriptions</a></li>
-            <li><a href="/reports">Reports</a></li>
             <li><a href="/profile" class="active">Profile</a></li>
           </ul>
         </nav>
@@ -38,22 +37,6 @@
             </button>
             <h1>Profile</h1>
           </div>
-          <div class="topbar-search">
-            <input
-              type="search"
-              id="topbarSearch"
-              placeholder="Quick search..."
-              autocomplete="off"
-            />
-          </div>
-          <button
-            class="topbar-search-icon"
-            id="mobileSearchBtn"
-            aria-label="Search"
-            title="Search"
-          >
-            🔍
-          </button>
           <div class="topbar-actions">
             <form th:action="@{/logout}" method="post">
               <button type="submit" class="btn btn-danger">Logout</button>
@@ -61,117 +44,65 @@
           </div>
         </header>
 
-        <!-- Mobile Search Overlay -->
-        <div class="topbar-search-overlay" id="mobileSearchOverlay">
-          <div class="topbar-search-mobile">
-            <input
-              type="search"
-              id="mobileSearchInput"
-              placeholder="Quick search..."
-              autocomplete="off"
-            />
-            <button
-              class="close-search"
-              id="closeMobileSearch"
-              aria-label="Close search"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
         <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
           <div class="breadcrumbs">
             <a href="/dashboard">Dashboard</a>
             <span class="separator">/</span>
             <span class="current">Profile</span>
           </div>
-          <div class="form-container">
-            <h2 style="margin-bottom: 1.5rem">Account Information</h2>
-
-            <form id="profileForm">
-              <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" disabled />
-                <small>Username cannot be changed</small>
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-8">
+              <div class="text-center mb-8">
+                <div
+                  class="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-4xl font-bold"
+                >
+                  <span
+                    th:text="${user != null and user.username != null ? user.username.substring(0, 1).toUpperCase() : 'U'}"
+                  ></span>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                  Profile Information
+                </h2>
+                <p class="text-gray-500">View your account details</p>
               </div>
 
-              <div class="form-group">
-                <label for="name">Name </label>
-                <input type="text" id="name" name="name" required />
-                <span class="form-error" id="nameError"></span>
+              <div class="space-y-6">
+                <div class="border-b border-gray-200 pb-6">
+                  <label class="block text-sm font-medium text-gray-600 mb-2">
+                    Name
+                  </label>
+                  <div
+                    class="mt-1 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <p class="text-lg font-semibold text-gray-800">
+                      <span
+                        th:text="${user != null and user.username != null ? user.username : 'N/A'}"
+                      ></span>
+                    </p>
+                  </div>
+                </div>
+
+                <div class="border-b border-gray-200 pb-6">
+                  <label class="block text-sm font-medium text-gray-600 mb-2">
+                    Email
+                  </label>
+                  <div
+                    class="mt-1 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <p class="text-lg font-semibold text-gray-800">
+                      <span
+                        th:text="${user != null and user.email != null ? user.email : 'N/A'}"
+                      ></span>
+                    </p>
+                  </div>
+                </div>
               </div>
-
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" />
-                <span class="form-error" id="emailError"></span>
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                  Update Profile
-                </button>
-              </div>
-            </form>
-
-            <hr
-              style="
-                margin: 2rem 0;
-                border: none;
-                border-top: 1px solid var(--border-color);
-              "
-            />
-
-            <h2 style="margin-bottom: 1.5rem">Change Password</h2>
-
-            <form id="passwordForm">
-              <div class="form-group">
-                <label for="currentPassword">Current Password </label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  name="currentPassword"
-                  required
-                />
-                <span class="form-error" id="currentPasswordError"></span>
-              </div>
-
-              <div class="form-group">
-                <label for="newPassword">New Password </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  name="newPassword"
-                  required
-                />
-                <small>Password must be at least 6 characters</small>
-                <span class="form-error" id="newPasswordError"></span>
-              </div>
-
-              <div class="form-group">
-                <label for="confirmPassword">Confirm New Password </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  required
-                />
-                <span class="form-error" id="confirmPasswordError"></span>
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                  Change Password
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       </main>
     </div>
 
     <script src="/app.js"></script>
-    <script src="/scripts/profile.js"></script>
   </body>
 </html>

@@ -1,10 +1,12 @@
 package bd.edu.seu.librarymanagementsystem.config;
 
+import bd.edu.seu.librarymanagementsystem.model.Allotment;
 import bd.edu.seu.librarymanagementsystem.model.Book;
 import bd.edu.seu.librarymanagementsystem.model.Publication;
 import bd.edu.seu.librarymanagementsystem.model.Student;
 import bd.edu.seu.librarymanagementsystem.model.Subscription;
 import bd.edu.seu.librarymanagementsystem.model.Vendor;
+import bd.edu.seu.librarymanagementsystem.service.AllotmentService;
 import bd.edu.seu.librarymanagementsystem.service.BookService;
 import bd.edu.seu.librarymanagementsystem.service.PublicationService;
 import bd.edu.seu.librarymanagementsystem.service.StudentService;
@@ -14,6 +16,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -24,27 +27,49 @@ public class DummyDataInitializer {
     private final VendorService vendorService;
     private final BookService bookService;
     private final SubscriptionService subscriptionService;
+    private final AllotmentService allotmentService;
 
     public DummyDataInitializer(
             StudentService studentService,
             PublicationService publicationService,
             VendorService vendorService,
             BookService bookService,
-            SubscriptionService subscriptionService) {
+            SubscriptionService subscriptionService,
+            AllotmentService allotmentService) {
         this.studentService = studentService;
         this.publicationService = publicationService;
         this.vendorService = vendorService;
         this.bookService = bookService;
         this.subscriptionService = subscriptionService;
+        this.allotmentService = allotmentService;
     }
 
     @PostConstruct
     public void initializeDummyData() {
-        initializeStudents();
-        initializePublications();
-        initializeVendors();
-        initializeBooks();
-        initializeSubscriptions();
+        try {
+            // System.out.println("=== Initializing dummy data ===");
+            initializeStudents();
+            // System.out.println("Students initialized: " +
+            // studentService.getAllStudents().size());
+            initializePublications();
+            // System.out.println("Publications initialized: " +
+            // publicationService.getAllPublications().size());
+            initializeVendors();
+            // System.out.println("Vendors initialized: " +
+            // vendorService.getAllVendors().size());
+            initializeBooks();
+            // System.out.println("Books initialized: " + bookService.getAllBooks().size());
+            initializeSubscriptions();
+            // System.out.println("Subscriptions initialized: " +
+            // subscriptionService.getAllSubscriptions().size());
+            initializeAllotments();
+            // System.out.println("Allotments initialized: " +
+            // allotmentService.getAllAllotments().size());
+            // System.out.println("=== Dummy data initialization completed ===");
+        } catch (Exception e) {
+            // System.err.println("Error initializing dummy data: " + e.getMessage());
+            // e.printStackTrace();
+        }
     }
 
     private void initializeStudents() {
@@ -385,5 +410,133 @@ public class DummyDataInitializer {
                 subscriptionService.saveSubscription(sub4);
             }
         }
+    }
+
+    private void initializeAllotments() {
+        if (!allotmentService.getAllAllotments().isEmpty()) {
+            return;
+        }
+
+        List<Student> students = studentService.getAllStudents();
+        List<Book> books = bookService.getAllBooks();
+
+        if (students.isEmpty() || books.isEmpty()) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Allotment allotment1 = new Allotment();
+        allotment1.setBookId(books.get(0).getId());
+        allotment1.setStudentId(students.get(0).getId());
+        allotment1.setAllottedBy("admin@library.com");
+        allotment1.setAllottedAt(now.minusDays(5));
+        allotment1.setDueAt(now.plusDays(9));
+        allotment1.setStatus("active");
+        allotment1.setFineAmount(0L);
+        allotmentService.saveAllotment(allotment1);
+
+        Allotment allotment2 = new Allotment();
+        allotment2.setBookId(books.get(1).getId());
+        allotment2.setStudentId(students.get(1).getId());
+        allotment2.setAllottedBy("admin@library.com");
+        allotment2.setAllottedAt(now.minusDays(10));
+        allotment2.setDueAt(now.minusDays(3));
+        allotment2.setStatus("active");
+        allotment2.setFineAmount(0L);
+        allotmentService.saveAllotment(allotment2);
+
+        Allotment allotment3 = new Allotment();
+        allotment3.setBookId(books.get(2).getId());
+        allotment3.setStudentId(students.get(2).getId());
+        allotment3.setAllottedBy("admin@library.com");
+        allotment3.setAllottedAt(now.minusDays(20));
+        allotment3.setDueAt(now.minusDays(6));
+        allotment3.setStatus("active");
+        allotment3.setFineAmount(0L);
+        allotmentService.saveAllotment(allotment3);
+
+        Allotment allotment4 = new Allotment();
+        allotment4.setBookId(books.get(3).getId());
+        allotment4.setStudentId(students.get(0).getId());
+        allotment4.setAllottedBy("admin@library.com");
+        allotment4.setAllottedAt(now.minusDays(30));
+        allotment4.setDueAt(now.minusDays(16));
+        allotment4.setStatus("active");
+        Allotment saved4 = allotmentService.saveAllotment(allotment4);
+        saved4.setReturnedAt(now.minusDays(15));
+        saved4.setStatus("returned");
+        saved4.setFineAmount(20L);
+        allotmentService.updateAllotment(saved4.getId(), saved4);
+        Book book4 = bookService.getBookById(books.get(3).getId());
+        if (book4 != null) {
+            book4.setAvailableCopies(book4.getAvailableCopies() + 1);
+            bookService.updateBook(book4.getId(), book4);
+        }
+
+        Allotment allotment5 = new Allotment();
+        allotment5.setBookId(books.get(4).getId());
+        allotment5.setStudentId(students.get(1).getId());
+        allotment5.setAllottedBy("admin@library.com");
+        allotment5.setAllottedAt(now.minusDays(25));
+        allotment5.setDueAt(now.minusDays(11));
+        allotment5.setStatus("active");
+        Allotment saved5 = allotmentService.saveAllotment(allotment5);
+        saved5.setReturnedAt(now.minusDays(8));
+        saved5.setStatus("returned");
+        saved5.setFineAmount(60L);
+        allotmentService.updateAllotment(saved5.getId(), saved5);
+        Book book5 = bookService.getBookById(books.get(4).getId());
+        if (book5 != null) {
+            book5.setAvailableCopies(book5.getAvailableCopies() + 1);
+            bookService.updateBook(book5.getId(), book5);
+        }
+
+        Allotment allotment6 = new Allotment();
+        allotment6.setBookId(books.get(5).getId());
+        allotment6.setStudentId(students.get(2).getId());
+        allotment6.setAllottedBy("admin@library.com");
+        allotment6.setAllottedAt(now.minusDays(35));
+        allotment6.setDueAt(now.minusDays(21));
+        allotment6.setStatus("active");
+        Allotment saved6 = allotmentService.saveAllotment(allotment6);
+        saved6.setReturnedAt(now.minusDays(20));
+        saved6.setStatus("returned");
+        saved6.setFineAmount(0L);
+        allotmentService.updateAllotment(saved6.getId(), saved6);
+        Book book6 = bookService.getBookById(books.get(5).getId());
+        if (book6 != null) {
+            book6.setAvailableCopies(book6.getAvailableCopies() + 1);
+            bookService.updateBook(book6.getId(), book6);
+        }
+
+        Allotment allotment7 = new Allotment();
+        allotment7.setBookId(books.get(6).getId());
+        allotment7.setStudentId(students.get(3).getId());
+        allotment7.setAllottedBy("admin@library.com");
+        allotment7.setAllottedAt(now.minusDays(8));
+        allotment7.setDueAt(now.plusDays(6));
+        allotment7.setStatus("active");
+        allotment7.setFineAmount(0L);
+        allotmentService.saveAllotment(allotment7);
+
+        Allotment allotment8 = new Allotment();
+        allotment8.setBookId(books.get(7).getId());
+        allotment8.setStudentId(students.get(4).getId());
+        allotment8.setAllottedBy("admin@library.com");
+        allotment8.setAllottedAt(now.minusDays(40));
+        allotment8.setDueAt(now.minusDays(26));
+        allotment8.setStatus("active");
+        Allotment saved8 = allotmentService.saveAllotment(allotment8);
+        saved8.setReturnedAt(now.minusDays(20));
+        saved8.setStatus("returned");
+        saved8.setFineAmount(120L);
+        allotmentService.updateAllotment(saved8.getId(), saved8);
+        Book book8 = bookService.getBookById(books.get(7).getId());
+        if (book8 != null) {
+            book8.setAvailableCopies(book8.getAvailableCopies() + 1);
+            bookService.updateBook(book8.getId(), book8);
+        }
+
     }
 }

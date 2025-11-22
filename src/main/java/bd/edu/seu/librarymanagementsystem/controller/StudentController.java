@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.StudentRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.Student;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.StudentService;
 import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
 import bd.edu.seu.librarymanagementsystem.util.SessionManager;
@@ -18,9 +19,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class StudentController {
 
     private final StudentService studentService;
+    private final ActivityService activityService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, ActivityService activityService) {
         this.studentService = studentService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/students")
@@ -52,7 +55,10 @@ public class StudentController {
             student.setPhone(requestDTO.phone());
             student.setDepartment(requestDTO.department());
             student.setSubscriptionId(requestDTO.subscriptionId());
-            studentService.saveStudent(student);
+            Student savedStudent = studentService.saveStudent(student);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Student Added",
+                    "Added student: " + savedStudent.getName() + " (Roll: " + savedStudent.getRoll() + ")", actor);
             redirectAttributes.addFlashAttribute("successMessage", "Student created successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -75,7 +81,11 @@ public class StudentController {
             student.setPhone(requestDTO.phone());
             student.setDepartment(requestDTO.department());
             student.setSubscriptionId(requestDTO.subscriptionId());
+            Student existingStudent = studentService.getStudentById(id);
+            String studentName = existingStudent != null ? existingStudent.getName() : "Unknown";
             studentService.updateStudent(id, student);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Student Updated", "Updated student: " + studentName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Student updated successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -90,7 +100,11 @@ public class StudentController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         try {
+            Student student = studentService.getStudentById(id);
+            String studentName = student != null ? student.getName() : "Unknown";
             studentService.deleteStudent(id);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Student Deleted", "Deleted student: " + studentName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Student deleted successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

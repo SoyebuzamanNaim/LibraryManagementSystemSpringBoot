@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.SubscriptionRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.Subscription;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.StudentService;
 import bd.edu.seu.librarymanagementsystem.service.SubscriptionService;
 import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
@@ -20,10 +21,13 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
     private final StudentService studentService;
+    private final ActivityService activityService;
 
-    public SubscriptionController(SubscriptionService subscriptionService, StudentService studentService) {
+    public SubscriptionController(SubscriptionService subscriptionService, StudentService studentService,
+            ActivityService activityService) {
         this.subscriptionService = subscriptionService;
         this.studentService = studentService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/subscriptions")
@@ -56,7 +60,11 @@ public class SubscriptionController {
             subscription.setStartDate(requestDTO.startDate());
             subscription.setEndDate(requestDTO.endDate());
             subscription.setActive(active != null && active.equals("on"));
-            subscriptionService.saveSubscription(subscription);
+            Subscription savedSubscription = subscriptionService.saveSubscription(subscription);
+            var student = studentService.getStudentById(savedSubscription.getStudentId());
+            String studentName = student != null ? student.getName() : "Unknown";
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Subscription Added", "Added subscription for student: " + studentName + " (Type: " + savedSubscription.getType() + ")", actor);
             redirectAttributes.addFlashAttribute("successMessage", "Subscription created successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -79,7 +87,12 @@ public class SubscriptionController {
             subscription.setStartDate(requestDTO.startDate());
             subscription.setEndDate(requestDTO.endDate());
             subscription.setActive(active != null && active.equals("on"));
+            Subscription existingSubscription = subscriptionService.getSubscriptionById(id);
+            var student = existingSubscription != null ? studentService.getStudentById(existingSubscription.getStudentId()) : null;
+            String studentName = student != null ? student.getName() : "Unknown";
             subscriptionService.updateSubscription(id, subscription);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Subscription Updated", "Updated subscription for student: " + studentName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Subscription updated successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -94,7 +107,12 @@ public class SubscriptionController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         try {
+            Subscription subscription = subscriptionService.getSubscriptionById(id);
+            var student = subscription != null ? studentService.getStudentById(subscription.getStudentId()) : null;
+            String studentName = student != null ? student.getName() : "Unknown";
             subscriptionService.deleteSubscription(id);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Subscription Deleted", "Deleted subscription for student: " + studentName, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Subscription deleted successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

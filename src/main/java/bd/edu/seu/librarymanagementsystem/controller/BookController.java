@@ -2,6 +2,7 @@ package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.BookRequestDTO;
 import bd.edu.seu.librarymanagementsystem.model.Book;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.BookService;
 import bd.edu.seu.librarymanagementsystem.service.PublicationService;
 import bd.edu.seu.librarymanagementsystem.service.VendorService;
@@ -27,11 +28,14 @@ public class BookController {
     private final BookService bookService;
     private final PublicationService publicationService;
     private final VendorService vendorService;
+    private final ActivityService activityService;
 
-    public BookController(BookService bookService, PublicationService publicationService, VendorService vendorService) {
+    public BookController(BookService bookService, PublicationService publicationService,
+            VendorService vendorService, ActivityService activityService) {
         this.bookService = bookService;
         this.publicationService = publicationService;
         this.vendorService = vendorService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/books")
@@ -86,7 +90,9 @@ public class BookController {
             book.setCategories(dto.categories() != null ? dto.categories() : new ArrayList<>());
             book.setPurchaseDate(dto.purchaseDate());
             book.setPrice(dto.price());
-            bookService.saveBook(book);
+            Book savedBook = bookService.saveBook(book);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Book Added", "Added book: " + savedBook.getTitle(), actor);
             redirectAttributes.addFlashAttribute("successMessage", "Book created successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -132,7 +138,11 @@ public class BookController {
             book.setCategories(dto.categories() != null ? dto.categories() : new ArrayList<>());
             book.setPurchaseDate(dto.purchaseDate());
             book.setPrice(dto.price());
+            Book existingBook = bookService.getBookById(id);
+            String bookTitle = existingBook != null ? existingBook.getTitle() : "Unknown";
             bookService.updateBook(id, book);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Book Updated", "Updated book: " + bookTitle, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Book updated successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -149,7 +159,11 @@ public class BookController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         try {
+            Book book = bookService.getBookById(id);
+            String bookTitle = book != null ? book.getTitle() : "Unknown";
             bookService.deleteBook(id);
+            String actor = SessionManager.getEmail(session);
+            activityService.logActivity("Book Deleted", "Deleted book: " + bookTitle, actor);
             redirectAttributes.addFlashAttribute("successMessage", "Book deleted successfully");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());

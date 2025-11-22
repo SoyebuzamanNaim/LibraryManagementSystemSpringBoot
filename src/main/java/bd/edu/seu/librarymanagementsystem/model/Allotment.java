@@ -21,6 +21,7 @@ public class Allotment {
     private LocalDateTime dueAt;
     private LocalDateTime returnedAt;
     private String status;
+    private Long fineAmount;
 
     public void setAllottedAtIfNull() {
         if (allottedAt == null) {

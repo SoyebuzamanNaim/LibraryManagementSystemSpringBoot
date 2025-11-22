@@ -1,6 +1,7 @@
 package bd.edu.seu.librarymanagementsystem.controller;
 
 import bd.edu.seu.librarymanagementsystem.dto.LoginRequestDTO;
+import bd.edu.seu.librarymanagementsystem.service.ActivityService;
 import bd.edu.seu.librarymanagementsystem.service.AuthLoginService;
 import bd.edu.seu.librarymanagementsystem.util.RedirectUtil;
 import bd.edu.seu.librarymanagementsystem.util.SessionManager;
@@ -16,9 +17,11 @@ import jakarta.servlet.http.HttpSession;
 public class LoginController {
 
     private final AuthLoginService authLoginService;
+    private final ActivityService activityService;
 
-    public LoginController(AuthLoginService authLoginService) {
+    public LoginController(AuthLoginService authLoginService, ActivityService activityService) {
         this.authLoginService = authLoginService;
+        this.activityService = activityService;
     }
 
     @GetMapping("/login")
@@ -42,6 +45,7 @@ public class LoginController {
             return RedirectUtil.redirectToLogin(redirectAttributes);
         }
         SessionManager.setEmail(session, logindto.email());
+        activityService.logActivity("Login", "User logged in successfully", logindto.email());
         redirectAttributes.addFlashAttribute("email", logindto.email());
         redirectAttributes.addFlashAttribute("loginMessage", "Welcome " + logindto.email() + "! Login successful");
         return RedirectUtil.redirectToDashboard(redirectAttributes);
