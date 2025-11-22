@@ -32,7 +32,8 @@ public class ActivityServiceImplementation implements ActivityService {
 
         activityStore.add(0, activity);
 
-        // System.out.println("Activity logged: " + action + " by " + actor + " - " + details);
+        // System.out.println("Activity logged: " + action + " by " + actor + " - " +
+        // details);
         // System.out.println("Total activities: " + activityStore.size());
 
         if (activityStore.size() > MAX_ACTIVITIES) {
@@ -45,7 +46,8 @@ public class ActivityServiceImplementation implements ActivityService {
         List<Activity> activities = activityStore.stream()
                 .limit(limit)
                 .collect(Collectors.toList());
-        // System.out.println("Getting recent activities: " + activities.size() + " out of " + activityStore.size());
+        // System.out.println("Getting recent activities: " + activities.size() + " out
+        // of " + activityStore.size());
         return activities;
     }
 
@@ -54,4 +56,3 @@ public class ActivityServiceImplementation implements ActivityService {
         return List.copyOf(activityStore);
     }
 }
-

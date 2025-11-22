@@ -17,15 +17,12 @@ public class AuthSignInServiceImplementation implements AuthSignInService {
     public User saveUser(User user) {
         validate(user);
         if (userStore.stream().anyMatch(existing -> existing.getUsername().equalsIgnoreCase(user.getUsername()))) {
-            System.out.println("Username already exists");
-            return null;
+            throw new IllegalArgumentException("Username already exists");
         }
         if (userStore.stream().anyMatch(existing -> existing.getEmail().equalsIgnoreCase(user.getEmail()))) {
-            System.out.println("Email already exists");
-            return null;
+            throw new IllegalArgumentException("Email already exists");
         }
         userStore.add(user);
-        System.out.println("User saved successfully");
         return user;
     }
 
@@ -44,20 +41,16 @@ public class AuthSignInServiceImplementation implements AuthSignInService {
 
     private void validate(User user) {
         if (user == null) {
-            System.out.println("User must not be null");
-            return;
+            throw new IllegalArgumentException("User must not be null");
         }
         if (StringUtils.isBlank(user.getUsername())) {
-            System.out.println("Username must not be blank");
-            return;
+            throw new IllegalArgumentException("Username must not be blank");
         }
         if (StringUtils.isBlank(user.getPassword())) {
-            System.out.println("Password must not be blank");
-            return;
+            throw new IllegalArgumentException("Password must not be blank");
         }
         if (StringUtils.isBlank(user.getEmail())) {
-            System.out.println("Email must not be blank");
-            return;
+            throw new IllegalArgumentException("Email must not be blank");
         }
     }
 }

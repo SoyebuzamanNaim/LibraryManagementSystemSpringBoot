@@ -14,9 +14,8 @@ public class IndexController {
     public String index(HttpSession session, RedirectAttributes redirectAttributes) {
         if (SessionManager.isLoggedIn(session)) {
             return RedirectUtil.redirectToDashboard(redirectAttributes);
+        } else {
+            return RedirectUtil.redirectToLogin(redirectAttributes);
         }
-       else{
-        return RedirectUtil.redirectToLogin(redirectAttributes);
-       }
     }
 }

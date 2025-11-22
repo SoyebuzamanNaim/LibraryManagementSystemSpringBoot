@@ -45,24 +45,10 @@ public class DashboardController {
         // System.out.println("Dashboard - Activities count: " +
         // recentActivities.size());
 
-        // Get user name from email
-        String email = SessionManager.getEmail(session);
-        String userName = "User"; // Default fallback
-        if (email != null && !email.isEmpty()) {
-            // Extract username from email (part before @)
-            if (email.contains("@")) {
-                userName = email.split("@")[0];
-            } else {
-                userName = email;
-            }
-        }
-        
-        // System.out.println("Dashboard - Email: " + email + ", UserName: " + userName);
-
         model.addAttribute("stats", stats);
         model.addAttribute("availableBooks", availableBooks);
         model.addAttribute("activities", recentActivities);
-        model.addAttribute("userName", userName);
+        model.addAttribute("email", SessionManager.getEmail(session));
         return "dashboard";
     }
 }

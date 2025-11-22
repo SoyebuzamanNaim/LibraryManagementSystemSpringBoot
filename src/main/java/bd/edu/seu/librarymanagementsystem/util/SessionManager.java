@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpSession;
 public class SessionManager {
 
     private SessionManager() {
-            
+
     }
 
     public static boolean isLoggedIn(HttpSession session) {
