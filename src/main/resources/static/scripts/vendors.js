@@ -71,7 +71,44 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.DeleteModal) {
     window.DeleteModal.initDeleteForms("delete-vendor-form", "vendor");
   }
+
+  // View modal close handlers
+  const viewModalCloseBtns = document.querySelectorAll(
+    ".view-vendor-modal-close"
+  );
+  viewModalCloseBtns.forEach((btn) => {
+    btn.addEventListener("click", closeViewModal);
+  });
+
+  const viewModalOverlay = document.getElementById("viewVendorModalOverlay");
+  if (viewModalOverlay) {
+    viewModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "viewVendorModalOverlay") {
+        closeViewModal();
+      }
+    });
+  }
 });
+
+function closeViewModal() {
+  const modal = document.getElementById("viewVendorModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+function viewVendor(id, name, email, phone, address, createdAt) {
+  const modal = document.getElementById("viewVendorModal");
+  if (modal) {
+    document.getElementById("viewVendorName").textContent = name || "-";
+    document.getElementById("viewVendorEmail").textContent = email || "-";
+    document.getElementById("viewVendorPhone").textContent = phone || "-";
+    document.getElementById("viewVendorAddress").textContent = address || "-";
+    document.getElementById("viewVendorCreatedAt").textContent =
+      createdAt || "-";
+    modal.classList.remove("hidden");
+  }
+}
 
 function editVendor(id, name, email, phone, address) {
   const modal = document.getElementById("vendorModal");
@@ -87,8 +124,17 @@ function editVendor(id, name, email, phone, address) {
   modal.classList.remove("hidden");
 }
 
-// Handle edit button clicks
+// Handle view and edit button clicks
 document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("view-vendor-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const name = e.target.getAttribute("data-name") || "";
+    const email = e.target.getAttribute("data-email") || "";
+    const phone = e.target.getAttribute("data-phone") || "";
+    const address = e.target.getAttribute("data-address") || "";
+    const createdAt = e.target.getAttribute("data-created-at") || "";
+    viewVendor(id, name, email, phone, address, createdAt);
+  }
   if (e.target.classList.contains("edit-vendor-btn")) {
     const id = e.target.getAttribute("data-id");
     const name = e.target.getAttribute("data-name") || "";

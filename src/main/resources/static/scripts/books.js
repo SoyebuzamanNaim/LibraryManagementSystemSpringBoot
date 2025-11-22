@@ -1,210 +1,255 @@
-let allBooks = [];
-let currentPage = 1;
-const pageSize = 10;
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("bookModal");
+  const openBtn = document.getElementById("openBookModalBtn");
+  const closeBtns = document.querySelectorAll(".book-modal-close");
+  const overlay = document.getElementById("bookModalOverlay");
+  const form = document.getElementById("bookForm");
 
-function loadBooks() {
-  allBooks = window.LMS.Books.getAll();
-  const publications = window.LMS.Publications.getAll();
-  const vendors = window.LMS.Vendors.getAll();
-
-  // Enhance books with publication and vendor names
-  allBooks = allBooks.map((book) => ({
-    ...book,
-    publicationName:
-      publications.find((p) => p.id == book.publicationId)?.name || "-",
-    vendorName: vendors.find((v) => v.id == book.vendorId)?.name || "-",
-    authorsString: Array.isArray(book.authors)
-      ? book.authors.join(", ")
-      : book.authors || "-",
-  }));
-
-  applyFilters();
-}
-
-function applyFilters() {
-  const searchInput =
-    document.getElementById("topbarSearch") ||
-    document.getElementById("searchInput");
-  const searchTerm = (searchInput ? searchInput.value : "").toLowerCase();
-  let filtered = allBooks;
-
-  // Update result count
-  const totalCount = filtered.length;
-
-  if (searchTerm) {
-    filtered = allBooks.filter(
-      (book) =>
-        book.title.toLowerCase().includes(searchTerm) ||
-        book.authorsString.toLowerCase().includes(searchTerm) ||
-        (book.isbn && book.isbn.toLowerCase().includes(searchTerm))
-    );
+  function openModal() {
+    modal.classList.remove("hidden");
+    document.getElementById("bookModalTitle").textContent = "Add Book";
+    document.getElementById("bookSubmitBtn").textContent = "Add Book";
+    form.action = "/books";
+    form.reset();
+    document.getElementById("bookId").value = "";
   }
 
-  const sortValue = document.getElementById("sortSelect").value;
-  filtered.sort((a, b) => {
-    switch (sortValue) {
-      case "title-asc":
-        return a.title.localeCompare(b.title);
-      case "title-desc":
-        return b.title.localeCompare(a.title);
-      case "author-asc":
-        return a.authorsString.localeCompare(b.authorsString);
-      case "created-desc":
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      case "created-asc":
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      default:
-        return 0;
-    }
+  function closeModal() {
+    modal.classList.add("hidden");
+    form.reset();
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener("click", openModal);
+  }
+
+  closeBtns.forEach((btn) => {
+    btn.addEventListener("click", closeModal);
   });
 
-  const pagination = window.LMS.Table.paginate(filtered, currentPage, pageSize);
-
-  // Update count display
-  const countElement = document.getElementById("bookCount");
-  if (countElement) {
-    const totalCount = filtered.length;
-    countElement.textContent = ` (${totalCount} ${
-      totalCount === 1 ? "book" : "books"
-    })`;
-  }
-
-  renderTable(pagination.data);
-  window.LMS.Table.createPagination(
-    "paginationContainer",
-    pagination,
-    changePage
-  );
-}
-
-function renderTable(books) {
-  const columns = [
-    { key: "title", label: "Title" },
-    { key: "authorsString", label: "Authors" },
-    { key: "isbn", label: "ISBN", hideOnMobile: true },
-    { key: "publicationName", label: "Publication", hideOnMobile: true },
-    { key: "totalCopies", label: "Total", hideOnMobile: true },
-    {
-      key: "availableCopies",
-      label: "Available",
-      render: (value, item) => {
-        const available = item.availableCopies || 0;
-        const total = item.totalCopies || 0;
-        const percentage =
-          total > 0 ? ((available / total) * 100).toFixed(0) : 0;
-        return `<span class="${
-          percentage > 50
-            ? "badge-success"
-            : percentage > 20
-            ? "badge-warning"
-            : "badge-danger"
-        } badge">${available} / ${total}</span>`;
-      },
-    },
-  ];
-
-  const actions = [
-    {
-      label: "View",
-      class: "btn-secondary",
-      onclick: "viewBook",
-    },
-    {
-      label: "Edit",
-      class: "btn-secondary",
-      onclick: "editBook",
-    },
-    {
-      label: "Delete",
-      class: "btn-danger",
-      onclick: "deleteBook",
-    },
-  ];
-
-  window.LMS.Table.createTable("tableContainer", books, columns, actions);
-}
-
-function changePage(page) {
-  currentPage = page;
-  applyFilters();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function viewBook(btn, book) {
-  const publication = window.LMS.Publications.getById(book.publicationId);
-  const vendor = window.LMS.Vendors.getById(book.vendorId);
-
-  const content = `
-        <h3>${window.LMS.UI.escapeHtml(book.title)}</h3>
-        <p><strong>Authors:</strong> ${window.LMS.UI.escapeHtml(
-          book.authorsString
-        )}</p>
-        <p><strong>ISBN:</strong> ${window.LMS.UI.escapeHtml(
-          book.isbn || "-"
-        )}</p>
-        <p><strong>Publication:</strong> ${window.LMS.UI.escapeHtml(
-          publication ? publication.name : "-"
-        )}</p>
-        <p><strong>Vendor:</strong> ${window.LMS.UI.escapeHtml(
-          vendor ? vendor.name : "-"
-        )}</p>
-        <p><strong>Total Copies:</strong> ${book.totalCopies || 0}</p>
-        <p><strong>Available Copies:</strong> ${book.availableCopies || 0}</p>
-        <p><strong>Categories:</strong> ${window.LMS.UI.escapeHtml(
-          Array.isArray(book.categories)
-            ? book.categories.join(", ")
-            : book.categories || "-"
-        )}</p>
-        <p><strong>Purchase Date:</strong> ${window.LMS.UI.escapeHtml(
-          book.purchaseDate
-            ? window.LMS.UI.formatDateOnly(book.purchaseDate)
-            : "-"
-        )}</p>
-        <p><strong>Price:</strong> $${window.LMS.UI.escapeHtml(
-          book.price || "0.00"
-        )}</p>
-      `;
-
-  window.LMS.UI.showModal("Book Details", content, null, true);
-}
-
-function editBook(btn, book) {
-  window.location.href = `/edit-book?id=${book.id}`;
-}
-
-function deleteBook(btn, book) {
-  window.LMS.UI.confirmDelete(
-    `Are you sure you want to delete "${book.title}"?`,
-    () => {
-      const result = window.LMS.Books.delete(book.id);
-      if (result === true) {
-        window.LMS.UI.showToast("Book deleted successfully", "success");
-        loadBooks();
-      } else if (result && result.error) {
-        window.LMS.UI.showToast(result.error, "error");
-      } else {
-        window.LMS.UI.showToast("Failed to delete book", "error");
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target.id === "bookModalOverlay") {
+        closeModal();
       }
-    }
-  );
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (!window.LMS.Auth.requireAuth()) return;
-
-  loadBooks();
-
-  const debouncedSearch = window.LMS.UI.debounce(applyFilters, 300);
-  const topbarSearch = document.getElementById("topbarSearch");
-  if (topbarSearch) {
-    topbarSearch.addEventListener("input", () => {
-      currentPage = 1;
-      debouncedSearch();
     });
   }
 
-  document.getElementById("sortSelect").addEventListener("change", () => {
-    currentPage = 1;
-    applyFilters();
+  const searchInput = document.getElementById("topbarSearch");
+  const searchForm = searchInput?.closest("form");
+  if (searchInput && searchForm) {
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchForm.submit();
+      }
+    });
+
+    searchInput.addEventListener("input", function () {
+      if (this.value.trim() === "") {
+        window.location.href = "/books";
+      }
+    });
+  }
+
+  const mobileSearchInput = document.getElementById("mobileSearchInput");
+  const mobileSearchForm = mobileSearchInput?.closest("form");
+  if (mobileSearchInput && mobileSearchForm) {
+    mobileSearchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        mobileSearchForm.submit();
+      }
+    });
+  }
+
+  if (window.DeleteModal) {
+    window.DeleteModal.initDeleteForms("delete-book-form", "book");
+  }
+
+  // View modal close handlers
+  const viewModalCloseBtns = document.querySelectorAll(
+    ".view-book-modal-close"
+  );
+  viewModalCloseBtns.forEach((btn) => {
+    btn.addEventListener("click", closeViewModal);
   });
+
+  const viewModalOverlay = document.getElementById("viewBookModalOverlay");
+  if (viewModalOverlay) {
+    viewModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "viewBookModalOverlay") {
+        closeViewModal();
+      }
+    });
+  }
+});
+
+function closeViewModal() {
+  const modal = document.getElementById("viewBookModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+function viewBook(
+  id,
+  title,
+  authors,
+  isbn,
+  publicationId,
+  vendorId,
+  totalCopies,
+  availableCopies,
+  categories,
+  purchaseDate,
+  price,
+  createdAt
+) {
+  const modal = document.getElementById("viewBookModal");
+  if (modal) {
+    document.getElementById("viewBookTitle").textContent = title || "-";
+    document.getElementById("viewBookAuthors").textContent = authors || "-";
+    document.getElementById("viewBookIsbn").textContent = isbn || "-";
+
+    // Get publication name from select dropdown
+    const publicationSelect = document.getElementById("bookPublicationId");
+    let publicationName = "-";
+    if (publicationId && publicationSelect) {
+      const publicationOption = Array.from(publicationSelect.options).find(
+        (opt) => opt.value === publicationId
+      );
+      if (publicationOption) {
+        publicationName = publicationOption.textContent;
+      }
+    }
+    document.getElementById("viewBookPublication").textContent =
+      publicationName;
+
+    // Get vendor name from select dropdown
+    const vendorSelect = document.getElementById("bookVendorId");
+    let vendorName = "-";
+    if (vendorId && vendorSelect) {
+      const vendorOption = Array.from(vendorSelect.options).find(
+        (opt) => opt.value === vendorId
+      );
+      if (vendorOption) {
+        vendorName = vendorOption.textContent;
+      }
+    }
+    document.getElementById("viewBookVendor").textContent = vendorName;
+
+    document.getElementById("viewBookTotalCopies").textContent =
+      totalCopies || "0";
+    document.getElementById("viewBookAvailableCopies").textContent =
+      availableCopies || "0";
+    document.getElementById("viewBookCategories").textContent =
+      categories || "-";
+    document.getElementById("viewBookPurchaseDate").textContent =
+      purchaseDate || "-";
+    document.getElementById("viewBookPrice").textContent = price
+      ? `$${price}`
+      : "-";
+    document.getElementById("viewBookCreatedAt").textContent = createdAt || "-";
+    modal.classList.remove("hidden");
+  }
+}
+
+function editBook(
+  id,
+  title,
+  authors,
+  publicationId,
+  vendorId,
+  isbn,
+  totalCopies,
+  availableCopies,
+  categories,
+  purchaseDate,
+  price
+) {
+  const modal = document.getElementById("bookModal");
+  const form = document.getElementById("bookForm");
+  document.getElementById("bookModalTitle").textContent = "Edit Book";
+  document.getElementById("bookSubmitBtn").textContent = "Update Book";
+  document.getElementById("bookId").value = id;
+  document.getElementById("bookTitle").value = title || "";
+  document.getElementById("bookAuthors").value = authors || "";
+  document.getElementById("bookPublicationId").value = publicationId || "";
+  document.getElementById("bookVendorId").value = vendorId || "";
+  document.getElementById("bookIsbn").value = isbn || "";
+  document.getElementById("bookTotalCopies").value = totalCopies || "";
+  document.getElementById("bookAvailableCopies").value = availableCopies || "";
+  document.getElementById("bookCategories").value = categories || "";
+  document.getElementById("bookPurchaseDate").value = purchaseDate || "";
+  document.getElementById("bookPrice").value = price || "";
+  form.action = "/books/update";
+  modal.classList.remove("hidden");
+}
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("view-book-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const title = e.target.getAttribute("data-title") || "";
+    // Extract authors and categories from hidden spans in the row
+    const row = e.target.closest("tr");
+    const authorsSpan = row.querySelector(".book-authors-data");
+    const categoriesSpan = row.querySelector(".book-categories-data");
+    const authors = authorsSpan ? authorsSpan.textContent.trim() : "";
+    const categories = categoriesSpan ? categoriesSpan.textContent.trim() : "";
+    const isbn = e.target.getAttribute("data-isbn") || "";
+    const publicationId = e.target.getAttribute("data-publication-id") || "";
+    const vendorId = e.target.getAttribute("data-vendor-id") || "";
+    const totalCopies = e.target.getAttribute("data-total-copies") || "";
+    const availableCopies =
+      e.target.getAttribute("data-available-copies") || "";
+    const purchaseDate = e.target.getAttribute("data-purchase-date") || "";
+    const price = e.target.getAttribute("data-price") || "";
+    const createdAt = e.target.getAttribute("data-created-at") || "";
+    viewBook(
+      id,
+      title,
+      authors,
+      isbn,
+      publicationId,
+      vendorId,
+      totalCopies,
+      availableCopies,
+      categories,
+      purchaseDate,
+      price,
+      createdAt
+    );
+  }
+  if (e.target.classList.contains("edit-book-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const title = e.target.getAttribute("data-title") || "";
+    // Extract authors and categories from hidden spans in the row
+    const row = e.target.closest("tr");
+    const authorsSpan = row.querySelector(".book-authors-data");
+    const categoriesSpan = row.querySelector(".book-categories-data");
+    const authors = authorsSpan ? authorsSpan.textContent.trim() : "";
+    const categories = categoriesSpan ? categoriesSpan.textContent.trim() : "";
+    const publicationId = e.target.getAttribute("data-publication-id") || "";
+    const vendorId = e.target.getAttribute("data-vendor-id") || "";
+    const isbn = e.target.getAttribute("data-isbn") || "";
+    const totalCopies = e.target.getAttribute("data-total-copies") || "";
+    const availableCopies =
+      e.target.getAttribute("data-available-copies") || "";
+    const purchaseDate = e.target.getAttribute("data-purchase-date") || "";
+    const price = e.target.getAttribute("data-price") || "";
+    editBook(
+      id,
+      title,
+      authors,
+      publicationId,
+      vendorId,
+      isbn,
+      totalCopies,
+      availableCopies,
+      categories,
+      purchaseDate,
+      price
+    );
+  }
 });

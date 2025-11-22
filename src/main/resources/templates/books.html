@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Books - Library Management System</title>
+    <link rel="stylesheet" href="/styles.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/scripts/tailwind-config.js"></script>
-    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="app-container flex min-h-screen">
@@ -33,19 +33,25 @@
       <main class="main-content flex-1 flex flex-col">
         <header class="topbar">
           <div class="topbar-left">
-            <button class="mobile-menu-btn md:hidden" aria-label="Toggle menu">
+            <button class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
               ☰
             </button>
             <h1>Books</h1>
           </div>
-          <div class="topbar-search">
+          <form class="topbar-search" th:action="@{/books}" method="get">
             <input
               type="search"
               id="topbarSearch"
+              name="search"
               placeholder="Search books by title, author, ISBN..."
-              autocomplete="off"
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -55,26 +61,31 @@
             🔍
           </button>
           <div class="topbar-actions">
-            <a href="/add-book" class="btn btn-primary">Add Book</a>
+            <button type="button" id="openBookModalBtn" class="btn btn-primary">
+              Add Book
+            </button>
           </div>
         </header>
 
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
           <div class="topbar-search-mobile">
-            <input
-              type="search"
-              id="mobileSearchInput"
-              placeholder="Search books by title, author, ISBN..."
-              autocomplete="off"
-            />
-            <button
-              class="close-search"
-              id="closeMobileSearch"
-              aria-label="Close search"
-            >
-              ✕
-            </button>
+            <form th:action="@{/books}" method="get">
+              <input
+                type="search"
+                id="mobileSearchInput"
+                name="search"
+                placeholder="Search books by title, author, ISBN..."
+                th:value="${searchTerm}"
+              />
+              <button
+                class="close-search"
+                id="closeMobileSearch"
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </form>
           </div>
         </div>
 
@@ -90,47 +101,347 @@
             <span class="text-gray-400">/</span>
             <span class="text-gray-900 font-semibold">Books</span>
           </div>
+
           <div
-            class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
-          >
-            <div
-              class="px-4 md:px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-            >
-              <h2 class="text-xl md:text-2xl font-bold text-gray-900">
-                All Books<span
-                  class="text-sm text-gray-500 font-normal ml-2"
-                  id="bookCount"
-                ></span>
-              </h2>
-              <div
-                class="flex flex-col md:flex-row gap-3 md:items-center w-full md:w-auto"
-              >
-                <select
-                  id="sortSelect"
-                  title="Sort books"
-                  class="w-full md:w-auto px-4 py-2 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 cursor-pointer bg-white"
-                >
-                  <option value="title-asc">Title (A-Z)</option>
-                  <option value="title-desc">Title (Z-A)</option>
-                  <option value="author-asc">Author (A-Z)</option>
-                  <option value="created-desc">Newest First</option>
-                  <option value="created-asc">Oldest First</option>
-                </select>
-              </div>
+            th:if="${successMessage}"
+            class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800"
+            th:text="${successMessage}"
+          ></div>
+
+          <div
+            th:if="${errorMessage}"
+            class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800"
+            th:text="${errorMessage}"
+          ></div>
+
+          <div class="table-container">
+            <div class="table-header">
+              <h2>All Books</h2>
+              <div class="table-controls"></div>
             </div>
-            <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
-              <div id="tableContainer" class="min-w-full"></div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Authors</th>
+                    <th>ISBN</th>
+                    <th>Publication</th>
+                    <th>Total Copies</th>
+                    <th>Available</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(books)}">
+                    <td colspan="7" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📚</div>
+                        <h3 class="text-lg font-semibold">No books found</h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Add Book" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="book : ${books}">
+                    <td th:text="${book.title}"></td>
+                    <td>
+                      <span
+                        th:if="${book.authors != null and !#lists.isEmpty(book.authors)}"
+                        th:each="author, iterStat : ${book.authors}"
+                      >
+                        <span th:text="${author}"></span
+                        ><span th:if="${!iterStat.last}">, </span>
+                      </span>
+                      <span
+                        th:if="${book.authors == null or #lists.isEmpty(book.authors)}"
+                        >-</span
+                      >
+                      <span
+                        th:if="${book.authors != null and !#lists.isEmpty(book.authors)}"
+                        class="hidden book-authors-data"
+                        ><span th:each="author, iterStat : ${book.authors}"
+                          ><span th:text="${author}"></span
+                          ><span th:if="${!iterStat.last}">, </span></span
+                        ></span
+                      >
+                      <span
+                        th:if="${book.categories != null and !#lists.isEmpty(book.categories)}"
+                        class="hidden book-categories-data"
+                        ><span th:each="category, iterStat : ${book.categories}"
+                          ><span th:text="${category}"></span
+                          ><span th:if="${!iterStat.last}">, </span></span
+                        ></span
+                      >
+                    </td>
+                    <td th:text="${book.isbn ?: '-'}"></td>
+                    <td>
+                      <div th:each="pub : ${publications}">
+                        <span
+                          th:if="${pub.id == book.publicationId}"
+                          th:text="${pub.name}"
+                          class="book-publication-name"
+                        ></span>
+                      </div>
+                      <span
+                        th:if="${book.publicationId == null}"
+                        class="book-publication-name"
+                        >-</span
+                      >
+                    </td>
+                    <td th:text="${book.totalCopies ?: 0}"></td>
+                    <td th:text="${book.availableCopies ?: 0}"></td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-small view-book-btn"
+                          th:data-id="${book.id}"
+                          th:data-title="${book.title}"
+                          th:data-isbn="${book.isbn ?: ''}"
+                          th:data-purchase-date="${book.purchaseDate != null ? #temporals.format(book.purchaseDate, 'yyyy-MM-dd') : ''}"
+                          th:data-price="${book.price ?: ''}"
+                          th:data-total-copies="${book.totalCopies ?: 0}"
+                          th:data-available-copies="${book.availableCopies ?: 0}"
+                          th:data-created-at="${book.createdAt != null ? #temporals.format(book.createdAt, 'yyyy-MM-dd') : '-'}"
+                          th:data-publication-id="${book.publicationId ?: ''}"
+                          th:data-vendor-id="${book.vendorId ?: ''}"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-small edit-book-btn"
+                          th:data-id="${book.id}"
+                          th:data-title="${book.title}"
+                          th:data-publication-id="${book.publicationId ?: ''}"
+                          th:data-vendor-id="${book.vendorId ?: ''}"
+                          th:data-isbn="${book.isbn ?: ''}"
+                          th:data-total-copies="${book.totalCopies ?: ''}"
+                          th:data-available-copies="${book.availableCopies ?: ''}"
+                          th:data-purchase-date="${book.purchaseDate != null ? #temporals.format(book.purchaseDate, 'yyyy-MM-dd') : ''}"
+                          th:data-price="${book.price ?: ''}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          th:action="@{/books/delete}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-book-form"
+                        >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${book.id}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div
-              id="paginationContainer"
-              class="px-4 md:px-6 py-4 border-t border-gray-200"
-            ></div>
           </div>
         </div>
       </main>
     </div>
 
-    <script src="/app.js"></script>
+    <!-- Add/Edit Book Modal -->
+    <div id="bookModal" class="hidden">
+      <div class="modal-overlay" id="bookModalOverlay">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 id="bookModalTitle">Add Book</h3>
+            <button class="modal-close book-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="bookForm" th:action="@{/books}" method="post">
+              <input type="hidden" id="bookId" name="id" value="" />
+              <div class="form-group">
+                <label for="bookTitle">Title </label>
+                <input type="text" id="bookTitle" name="title" required />
+              </div>
+              <div class="form-group">
+                <label for="bookAuthors">Authors (comma-separated)</label>
+                <input
+                  type="text"
+                  id="bookAuthors"
+                  name="authors"
+                  placeholder="e.g., John Doe, Jane Smith"
+                />
+              </div>
+              <div class="form-group">
+                <label for="bookIsbn">ISBN</label>
+                <input type="text" id="bookIsbn" name="isbn" />
+              </div>
+              <div class="form-group">
+                <label for="bookPublicationId">Publication </label>
+                <select id="bookPublicationId" name="publicationId">
+                  <option value="">Select Publication</option>
+                  <option
+                    th:each="publication : ${publications}"
+                    th:value="${publication.id}"
+                    th:text="${publication.name}"
+                  ></option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bookVendorId">Vendor </label>
+                <select id="bookVendorId" name="vendorId">
+                  <option value="">Select Vendor</option>
+                  <option
+                    th:each="vendor : ${vendors}"
+                    th:value="${vendor.id}"
+                    th:text="${vendor.name}"
+                  ></option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="bookTotalCopies">Total Copies </label>
+                <input
+                  type="number"
+                  id="bookTotalCopies"
+                  name="totalCopies"
+                  min="0"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="bookAvailableCopies">Available Copies </label>
+                <input
+                  type="number"
+                  id="bookAvailableCopies"
+                  name="availableCopies"
+                  min="0"
+                />
+              </div>
+              <div class="form-group">
+                <label for="bookCategories">Categories (comma-separated)</label>
+                <input
+                  type="text"
+                  id="bookCategories"
+                  name="categories"
+                  placeholder="e.g., Fiction, Science, History"
+                />
+              </div>
+              <div class="form-group">
+                <label for="bookPurchaseDate">Purchase Date</label>
+                <input type="date" id="bookPurchaseDate" name="purchaseDate" />
+              </div>
+              <div class="form-group">
+                <label for="bookPrice">Price</label>
+                <input
+                  type="number"
+                  id="bookPrice"
+                  name="price"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary book-modal-close"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="bookSubmitBtn"
+                >
+                  Add Book
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Book Details Modal -->
+    <div id="viewBookModal" class="hidden">
+      <div class="modal-overlay" id="viewBookModalOverlay">
+        <div class="modal" style="max-width: 600px">
+          <div class="modal-header">
+            <h3>Book Details</h3>
+            <button class="modal-close view-book-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="student-details">
+              <div class="detail-row">
+                <strong>Title:</strong>
+                <span id="viewBookTitle"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Authors:</strong>
+                <span id="viewBookAuthors"></span>
+              </div>
+              <div class="detail-row">
+                <strong>ISBN:</strong>
+                <span id="viewBookIsbn"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Publication:</strong>
+                <span id="viewBookPublication"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Vendor:</strong>
+                <span id="viewBookVendor"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Total Copies:</strong>
+                <span id="viewBookTotalCopies"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Available Copies:</strong>
+                <span id="viewBookAvailableCopies"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Categories:</strong>
+                <span id="viewBookCategories"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Purchase Date:</strong>
+                <span id="viewBookPurchaseDate"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Price:</strong>
+                <span id="viewBookPrice"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Created At:</strong>
+                <span id="viewBookCreatedAt"></span>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary view-book-modal-close"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/books.js"></script>
   </body>
 </html>

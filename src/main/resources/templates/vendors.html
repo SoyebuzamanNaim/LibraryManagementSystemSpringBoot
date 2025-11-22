@@ -165,6 +165,18 @@
                       <div class="action-buttons">
                         <button
                           type="button"
+                          class="btn btn-primary btn-small view-vendor-btn"
+                          th:data-id="${vendor.id}"
+                          th:data-name="${vendor.name}"
+                          th:data-email="${vendor.email ?: ''}"
+                          th:data-phone="${vendor.phone ?: ''}"
+                          th:data-address="${vendor.address ?: ''}"
+                          th:data-created-at="${vendor.createdAt != null ? #temporals.format(vendor.createdAt, 'yyyy-MM-dd') : '-'}"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
                           class="btn btn-secondary btn-small edit-vendor-btn"
                           th:data-id="${vendor.id}"
                           th:data-name="${vendor.name}"
@@ -269,6 +281,52 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Vendor Details Modal -->
+    <div id="viewVendorModal" class="hidden">
+      <div class="modal-overlay" id="viewVendorModalOverlay">
+        <div class="modal" style="max-width: 500px">
+          <div class="modal-header">
+            <h3>Vendor Details</h3>
+            <button class="modal-close view-vendor-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="student-details">
+              <div class="detail-row">
+                <strong>Name:</strong>
+                <span id="viewVendorName"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Email:</strong>
+                <span id="viewVendorEmail"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Phone:</strong>
+                <span id="viewVendorPhone"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Address:</strong>
+                <span id="viewVendorAddress"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Created At:</strong>
+                <span id="viewVendorCreatedAt"></span>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary view-vendor-modal-close"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

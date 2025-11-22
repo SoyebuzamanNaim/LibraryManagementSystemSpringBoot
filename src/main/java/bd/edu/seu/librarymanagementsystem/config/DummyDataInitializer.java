@@ -1,8 +1,10 @@
 package bd.edu.seu.librarymanagementsystem.config;
 
+import bd.edu.seu.librarymanagementsystem.model.Book;
 import bd.edu.seu.librarymanagementsystem.model.Publication;
 import bd.edu.seu.librarymanagementsystem.model.Student;
 import bd.edu.seu.librarymanagementsystem.model.Vendor;
+import bd.edu.seu.librarymanagementsystem.service.BookService;
 import bd.edu.seu.librarymanagementsystem.service.PublicationService;
 import bd.edu.seu.librarymanagementsystem.service.StudentService;
 import bd.edu.seu.librarymanagementsystem.service.VendorService;
@@ -10,6 +12,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class DummyDataInitializer {
@@ -17,14 +20,17 @@ public class DummyDataInitializer {
     private final StudentService studentService;
     private final PublicationService publicationService;
     private final VendorService vendorService;
+    private final BookService bookService;
 
     public DummyDataInitializer(
             StudentService studentService,
             PublicationService publicationService,
-            VendorService vendorService) {
+            VendorService vendorService,
+            BookService bookService) {
         this.studentService = studentService;
         this.publicationService = publicationService;
         this.vendorService = vendorService;
+        this.bookService = bookService;
     }
 
     @PostConstruct
@@ -32,6 +38,7 @@ public class DummyDataInitializer {
         initializeStudents();
         initializePublications();
         initializeVendors();
+        initializeBooks();
     }
 
     private void initializeStudents() {
@@ -188,5 +195,137 @@ public class DummyDataInitializer {
         vendor6.setAddress("Wari, Dhaka");
         vendor6.setCreatedAt(LocalDate.now().minusDays(25));
         vendorService.saveVendor(vendor6);
+    }
+
+    private void initializeBooks() {
+        if (!bookService.getAllBooks().isEmpty()) {
+            return;
+        }
+
+        var publications = publicationService.getAllPublications();
+        var vendors = vendorService.getAllVendors();
+
+        if (publications.isEmpty() || vendors.isEmpty()) {
+            return;
+        }
+
+        String pub1Id = publications.get(0).getId();
+        String pub2Id = publications.get(1).getId();
+        String pub3Id = publications.get(2).getId();
+        String vendor1Id = vendors.get(0).getId();
+        String vendor2Id = vendors.get(1).getId();
+        String vendor3Id = vendors.get(2).getId();
+
+        Book book1 = new Book();
+        book1.setTitle("Data Structures and Algorithms in Java");
+        book1.setAuthors(List.of("Robert Lafore", "Michael Goodrich"));
+        book1.setPublicationId(pub1Id);
+        book1.setVendorId(vendor1Id);
+        book1.setIsbn("978-0134685991");
+        book1.setTotalCopies(15);
+        book1.setAvailableCopies(12);
+        book1.setCategories(List.of("Computer Science", "Programming", "Algorithms"));
+        book1.setPurchaseDate(LocalDate.now().minusDays(90));
+        book1.setPrice(2500);
+        book1.setCreatedAt(LocalDate.now().minusDays(90));
+        bookService.saveBook(book1);
+
+        Book book2 = new Book();
+        book2.setTitle("Introduction to Database Systems");
+        book2.setAuthors(List.of("C. J. Date", "Hugh Darwen"));
+        book2.setPublicationId(pub2Id);
+        book2.setVendorId(vendor2Id);
+        book2.setIsbn("978-0133970777");
+        book2.setTotalCopies(20);
+        book2.setAvailableCopies(18);
+        book2.setCategories(List.of("Database", "Computer Science"));
+        book2.setPurchaseDate(LocalDate.now().minusDays(85));
+        book2.setPrice(2800);
+        book2.setCreatedAt(LocalDate.now().minusDays(85));
+        bookService.saveBook(book2);
+
+        Book book3 = new Book();
+        book3.setTitle("Operating System Concepts");
+        book3.setAuthors(List.of("Abraham Silberschatz", "Peter Baer Galvin", "Greg Gagne"));
+        book3.setPublicationId(pub3Id);
+        book3.setVendorId(vendor3Id);
+        book3.setIsbn("978-1119800366");
+        book3.setTotalCopies(12);
+        book3.setAvailableCopies(10);
+        book3.setCategories(List.of("Operating Systems", "Computer Science"));
+        book3.setPurchaseDate(LocalDate.now().minusDays(80));
+        book3.setPrice(3200);
+        book3.setCreatedAt(LocalDate.now().minusDays(80));
+        bookService.saveBook(book3);
+
+        Book book4 = new Book();
+        book4.setTitle("Computer Networks");
+        book4.setAuthors(List.of("Andrew S. Tanenbaum", "David J. Wetherall"));
+        book4.setPublicationId(pub1Id);
+        book4.setVendorId(vendor1Id);
+        book4.setIsbn("978-0132126953");
+        book4.setTotalCopies(18);
+        book4.setAvailableCopies(15);
+        book4.setCategories(List.of("Networking", "Computer Science"));
+        book4.setPurchaseDate(LocalDate.now().minusDays(75));
+        book4.setPrice(3000);
+        book4.setCreatedAt(LocalDate.now().minusDays(75));
+        bookService.saveBook(book4);
+
+        Book book5 = new Book();
+        book5.setTitle("Software Engineering: A Practitioner's Approach");
+        book5.setAuthors(List.of("Roger S. Pressman", "Bruce Maxim"));
+        book5.setPublicationId(pub2Id);
+        book5.setVendorId(vendor2Id);
+        book5.setIsbn("978-1259872976");
+        book5.setTotalCopies(14);
+        book5.setAvailableCopies(11);
+        book5.setCategories(List.of("Software Engineering", "Computer Science"));
+        book5.setPurchaseDate(LocalDate.now().minusDays(70));
+        book5.setPrice(2700);
+        book5.setCreatedAt(LocalDate.now().minusDays(70));
+        bookService.saveBook(book5);
+
+        Book book6 = new Book();
+        book6.setTitle("Artificial Intelligence: A Modern Approach");
+        book6.setAuthors(List.of("Stuart Russell", "Peter Norvig"));
+        book6.setPublicationId(pub3Id);
+        book6.setVendorId(vendor3Id);
+        book6.setIsbn("978-0134610993");
+        book6.setTotalCopies(10);
+        book6.setAvailableCopies(8);
+        book6.setCategories(List.of("Artificial Intelligence", "Computer Science", "Machine Learning"));
+        book6.setPurchaseDate(LocalDate.now().minusDays(65));
+        book6.setPrice(3500);
+        book6.setCreatedAt(LocalDate.now().minusDays(65));
+        bookService.saveBook(book6);
+
+        Book book7 = new Book();
+        book7.setTitle("Digital Logic and Computer Design");
+        book7.setAuthors(List.of("M. Morris Mano", "Michael D. Ciletti"));
+        book7.setPublicationId(pub1Id);
+        book7.setVendorId(vendor1Id);
+        book7.setIsbn("978-0132774209");
+        book7.setTotalCopies(16);
+        book7.setAvailableCopies(14);
+        book7.setCategories(List.of("Digital Logic", "Computer Architecture", "Electronics"));
+        book7.setPurchaseDate(LocalDate.now().minusDays(60));
+        book7.setPrice(2400);
+        book7.setCreatedAt(LocalDate.now().minusDays(60));
+        bookService.saveBook(book7);
+
+        Book book8 = new Book();
+        book8.setTitle("Microprocessor Architecture, Programming, and Applications");
+        book8.setAuthors(List.of("Ramesh Gaonkar"));
+        book8.setPublicationId(pub2Id);
+        book8.setVendorId(vendor2Id);
+        book8.setIsbn("978-0133627645");
+        book8.setTotalCopies(13);
+        book8.setAvailableCopies(10);
+        book8.setCategories(List.of("Microprocessor", "Computer Architecture", "Embedded Systems"));
+        book8.setPurchaseDate(LocalDate.now().minusDays(55));
+        book8.setPrice(2200);
+        book8.setCreatedAt(LocalDate.now().minusDays(55));
+        bookService.saveBook(book8);
     }
 }
