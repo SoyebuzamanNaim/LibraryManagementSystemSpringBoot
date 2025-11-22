@@ -3,10 +3,12 @@ package bd.edu.seu.librarymanagementsystem.config;
 import bd.edu.seu.librarymanagementsystem.model.Book;
 import bd.edu.seu.librarymanagementsystem.model.Publication;
 import bd.edu.seu.librarymanagementsystem.model.Student;
+import bd.edu.seu.librarymanagementsystem.model.Subscription;
 import bd.edu.seu.librarymanagementsystem.model.Vendor;
 import bd.edu.seu.librarymanagementsystem.service.BookService;
 import bd.edu.seu.librarymanagementsystem.service.PublicationService;
 import bd.edu.seu.librarymanagementsystem.service.StudentService;
+import bd.edu.seu.librarymanagementsystem.service.SubscriptionService;
 import bd.edu.seu.librarymanagementsystem.service.VendorService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
@@ -21,16 +23,19 @@ public class DummyDataInitializer {
     private final PublicationService publicationService;
     private final VendorService vendorService;
     private final BookService bookService;
+    private final SubscriptionService subscriptionService;
 
     public DummyDataInitializer(
             StudentService studentService,
             PublicationService publicationService,
             VendorService vendorService,
-            BookService bookService) {
+            BookService bookService,
+            SubscriptionService subscriptionService) {
         this.studentService = studentService;
         this.publicationService = publicationService;
         this.vendorService = vendorService;
         this.bookService = bookService;
+        this.subscriptionService = subscriptionService;
     }
 
     @PostConstruct
@@ -39,6 +44,7 @@ public class DummyDataInitializer {
         initializePublications();
         initializeVendors();
         initializeBooks();
+        initializeSubscriptions();
     }
 
     private void initializeStudents() {
@@ -327,5 +333,57 @@ public class DummyDataInitializer {
         book8.setPrice(2200);
         book8.setCreatedAt(LocalDate.now().minusDays(55));
         bookService.saveBook(book8);
+    }
+
+    private void initializeSubscriptions() {
+        if (!subscriptionService.getAllSubscriptions().isEmpty()) {
+            return;
+        }
+
+        List<Student> students = studentService.getAllStudents();
+
+        if (!students.isEmpty()) {
+            Student student1 = students.get(0);
+            Subscription sub1 = new Subscription();
+            sub1.setStudentId(student1.getId());
+            sub1.setType("Annual");
+            sub1.setStartDate(LocalDate.now().minusMonths(6));
+            sub1.setEndDate(LocalDate.now().plusMonths(6));
+            sub1.setActive(true);
+            subscriptionService.saveSubscription(sub1);
+
+            if (students.size() > 1) {
+                Student student2 = students.get(1);
+                Subscription sub2 = new Subscription();
+                sub2.setStudentId(student2.getId());
+                sub2.setType("Semester");
+                sub2.setStartDate(LocalDate.now().minusMonths(2));
+                sub2.setEndDate(LocalDate.now().plusMonths(4));
+                sub2.setActive(true);
+                subscriptionService.saveSubscription(sub2);
+            }
+
+            if (students.size() > 2) {
+                Student student3 = students.get(2);
+                Subscription sub3 = new Subscription();
+                sub3.setStudentId(student3.getId());
+                sub3.setType("Monthly");
+                sub3.setStartDate(LocalDate.now().minusDays(15));
+                sub3.setEndDate(LocalDate.now().plusDays(15));
+                sub3.setActive(true);
+                subscriptionService.saveSubscription(sub3);
+            }
+
+            if (students.size() > 3) {
+                Student student4 = students.get(3);
+                Subscription sub4 = new Subscription();
+                sub4.setStudentId(student4.getId());
+                sub4.setType("Annual");
+                sub4.setStartDate(LocalDate.now().minusMonths(12));
+                sub4.setEndDate(LocalDate.now().minusDays(1));
+                sub4.setActive(false);
+                subscriptionService.saveSubscription(sub4);
+            }
+        }
     }
 }

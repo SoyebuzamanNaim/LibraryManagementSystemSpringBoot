@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,14 +40,24 @@
             </button>
             <h1>Subscriptions</h1>
           </div>
-          <div class="topbar-search">
+          <form
+            class="topbar-search"
+            th:action="@{/subscriptions}"
+            method="get"
+          >
             <input
               type="search"
               id="topbarSearch"
-              placeholder="Search subscriptions by student..."
-              autocomplete="off"
+              name="search"
+              placeholder="Search subscriptions by type..."
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -70,19 +80,22 @@
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
           <div class="topbar-search-mobile">
-            <input
-              type="search"
-              id="mobileSearchInput"
-              placeholder="Search subscriptions by student..."
-              autocomplete="off"
-            />
-            <button
-              class="close-search"
-              id="closeMobileSearch"
-              aria-label="Close search"
-            >
-              ✕
-            </button>
+            <form th:action="@{/subscriptions}" method="get">
+              <input
+                type="search"
+                id="mobileSearchInput"
+                name="search"
+                placeholder="Search subscriptions by type..."
+                th:value="${searchTerm}"
+              />
+              <button
+                class="close-search"
+                id="closeMobileSearch"
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </form>
           </div>
         </div>
 
@@ -92,26 +105,125 @@
             <span class="separator">/</span>
             <span class="current">Subscriptions</span>
           </div>
+
+          <!-- Success/Error Messages -->
+          <div
+            th:if="${successMessage}"
+            class="success-message bg-green-50 border-green-200 text-green-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${successMessage}"
+          ></div>
+          <div
+            th:if="${errorMessage}"
+            class="alert error bg-red-50 border-red-200 text-red-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${errorMessage}"
+          ></div>
+
           <div class="table-container">
             <div class="table-header">
               <h2>All Subscriptions</h2>
-              <div class="table-controls">
-                <select id="filterSelect" title="Filter subscriptions">
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+              <div class="table-controls"></div>
             </div>
             <div class="table-wrapper">
-              <div id="tableContainer"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Type</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(subscriptions)}">
+                    <td colspan="6" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📋</div>
+                        <h3 class="text-lg font-semibold">
+                          No subscriptions found
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Add Subscription" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="subscription : ${subscriptions}">
+                    <td>
+                      <div th:each="student : ${students}">
+                        <span
+                          th:if="${student.id == subscription.studentId}"
+                          th:text="${student.name}"
+                        ></span>
+                      </div>
+                      <span th:if="${subscription.studentId == null}">-</span>
+                    </td>
+                    <td th:text="${subscription.type ?: '-'}"></td>
+                    <td
+                      th:text="${subscription.startDate != null ? #temporals.format(subscription.startDate, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td
+                      th:text="${subscription.endDate != null ? #temporals.format(subscription.endDate, 'yyyy-MM-dd') : '-'}"
+                    ></td>
+                    <td>
+                      <span
+                        th:if="${subscription.active != null and subscription.active}"
+                        class="badge badge-success"
+                        >Active</span
+                      >
+                      <span
+                        th:if="${subscription.active == null or !subscription.active}"
+                        class="badge badge-danger"
+                        >Inactive</span
+                      >
+                    </td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-small edit-subscription-btn"
+                          th:data-id="${subscription.id}"
+                          th:data-student-id="${subscription.studentId ?: ''}"
+                          th:data-type="${subscription.type ?: ''}"
+                          th:data-start-date="${subscription.startDate != null ? #temporals.format(subscription.startDate, 'yyyy-MM-dd') : ''}"
+                          th:data-end-date="${subscription.endDate != null ? #temporals.format(subscription.endDate, 'yyyy-MM-dd') : ''}"
+                          th:data-active="${subscription.active != null and subscription.active}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          th:action="@{/subscriptions/delete}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-subscription-form"
+                        >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${subscription.id}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div id="paginationContainer"></div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- Add/Edit Subscription Modal -->
     <div id="subscriptionModal" class="hidden">
       <div class="modal-overlay" id="subscriptionModalOverlay">
         <div class="modal">
@@ -122,15 +234,25 @@
             </button>
           </div>
           <div class="modal-body">
-            <form id="subscriptionForm">
+            <form
+              id="subscriptionForm"
+              th:action="@{/subscriptions}"
+              method="post"
+            >
+              <input type="hidden" id="subscriptionId" name="id" value="" />
               <div class="form-group">
-                <label for="subscriptionStudentId">Student</label>
+                <label for="subscriptionStudentId">Student </label>
                 <select id="subscriptionStudentId" name="studentId" required>
                   <option value="">Select Student</option>
+                  <option
+                    th:each="student : ${students}"
+                    th:value="${student.id}"
+                    th:text="|${student.name} (${student.roll})|"
+                  ></option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="subscriptionType">Type</label>
+                <label for="subscriptionType">Type </label>
                 <select id="subscriptionType" name="type" required>
                   <option value="">Select Type</option>
                   <option value="Annual">Annual</option>
@@ -140,7 +262,7 @@
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="subscriptionStartDate">Start Date</label>
+                  <label for="subscriptionStartDate">Start Date </label>
                   <input
                     type="date"
                     id="subscriptionStartDate"
@@ -149,7 +271,7 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label for="subscriptionEndDate">End Date</label>
+                  <label for="subscriptionEndDate">End Date </label>
                   <input
                     type="date"
                     id="subscriptionEndDate"
@@ -193,7 +315,7 @@
       </div>
     </div>
 
-    <script src="/app.js"></script>
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/subscriptions.js"></script>
   </body>
 </html>
