@@ -175,11 +175,16 @@
                           Edit
                         </button>
                         <form
-                          th:action="@{/vendors/{id}/delete(id=${vendor.id})}"
+                          th:action="@{/vendors/delete}"
                           method="post"
                           style="display: inline"
                           class="delete-vendor-form"
                         >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${vendor.id}"
+                          />
                           <button
                             type="submit"
                             class="btn btn-danger btn-small"

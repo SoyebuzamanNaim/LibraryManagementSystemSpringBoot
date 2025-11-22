@@ -53,8 +53,8 @@ public class PublicationController {
         return "redirect:/publications";
     }
 
-    @PostMapping("/publications/{id}/update")
-    public String updatePublication(@PathVariable String id,
+    @PostMapping("/publications/update")
+    public String updatePublication(@RequestParam String id,
             @ModelAttribute PublicationRequestDTO requestDTO,
             RedirectAttributes redirectAttributes, HttpSession session) {
         if (!SessionManager.isLoggedIn(session)) {
@@ -72,8 +72,8 @@ public class PublicationController {
         return "redirect:/publications";
     }
 
-    @PostMapping("/publications/{id}/delete")
-    public String deletePublication(@PathVariable String id,
+    @PostMapping("/publications/delete")
+    public String deletePublication(@RequestParam String id,
             RedirectAttributes redirectAttributes, HttpSession session) {
         if (!SessionManager.isLoggedIn(session)) {
             return RedirectUtil.redirectToLogin(redirectAttributes);

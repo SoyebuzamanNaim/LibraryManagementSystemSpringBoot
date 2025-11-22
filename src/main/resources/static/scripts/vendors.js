@@ -83,7 +83,7 @@ function editVendor(id, name, email, phone, address) {
   document.getElementById("vendorEmail").value = email || "";
   document.getElementById("vendorPhone").value = phone || "";
   document.getElementById("vendorAddress").value = address || "";
-  form.action = "/vendors/" + id + "/update";
+  form.action = "/vendors/update";
   modal.classList.remove("hidden");
 }
 

@@ -171,11 +171,16 @@
                           Edit
                         </button>
                         <form
-                          th:action="@{/publications/{id}/delete(id=${publication.id})}"
+                          th:action="@{/publications/delete}"
                           method="post"
                           style="display: inline"
                           class="delete-publication-form"
                         >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${publication.id}"
+                          />
                           <button
                             type="submit"
                             class="btn btn-danger btn-small"

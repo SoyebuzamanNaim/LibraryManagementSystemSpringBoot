@@ -88,7 +88,7 @@ function editPublication(id, name, address) {
   document.getElementById("publicationId").value = id;
   document.getElementById("publicationName").value = name || "";
   document.getElementById("publicationAddress").value = address || "";
-  form.action = "/publications/" + id + "/update";
+  form.action = "/publications/update";
   modal.classList.remove("hidden");
 }
 

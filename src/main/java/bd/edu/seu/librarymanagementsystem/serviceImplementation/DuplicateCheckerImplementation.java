@@ -1,6 +1,7 @@
 package bd.edu.seu.librarymanagementsystem.serviceImplementation;
 
 import bd.edu.seu.librarymanagementsystem.model.Publication;
+import bd.edu.seu.librarymanagementsystem.model.Student;
 import bd.edu.seu.librarymanagementsystem.model.Vendor;
 import bd.edu.seu.librarymanagementsystem.service.DuplicateChecker;
 import org.springframework.stereotype.Service;
@@ -30,5 +31,27 @@ public class DuplicateCheckerImplementation implements DuplicateChecker {
                 .anyMatch(vendor -> vendor.getName() != null
                         && vendor.getName().equalsIgnoreCase(name)
                         && (excludeId == null || !excludeId.equals(vendor.getId())));
+    }
+
+    @Override
+    public boolean isStudentRollDuplicate(String roll, List<Student> students, String excludeId) {
+        if (roll == null) {
+            return false;
+        }
+        return students.stream()
+                .anyMatch(student -> student.getRoll() != null
+                        && student.getRoll().equalsIgnoreCase(roll)
+                        && (excludeId == null || !excludeId.equals(student.getId())));
+    }
+
+    @Override
+    public boolean isStudentEmailDuplicate(String email, List<Student> students, String excludeId) {
+        if (email == null) {
+            return false;
+        }
+        return students.stream()
+                .anyMatch(student -> student.getEmail() != null
+                        && student.getEmail().equalsIgnoreCase(email)
+                        && (excludeId == null || !excludeId.equals(student.getId())));
     }
 }

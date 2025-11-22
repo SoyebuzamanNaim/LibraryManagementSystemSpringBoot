@@ -55,8 +55,8 @@ public class VendorController {
         return "redirect:/vendors";
     }
 
-    @PostMapping("/vendors/{id}/update")
-    public String updateVendor(@PathVariable String id,
+    @PostMapping("/vendors/update")
+    public String updateVendor(@RequestParam String id,
             @ModelAttribute VendorRequestDTO requestDTO,
             RedirectAttributes redirectAttributes, HttpSession session) {
         if (!SessionManager.isLoggedIn(session)) {
@@ -76,8 +76,8 @@ public class VendorController {
         return "redirect:/vendors";
     }
 
-    @PostMapping("/vendors/{id}/delete")
-    public String deleteVendor(@PathVariable String id,
+    @PostMapping("/vendors/delete")
+    public String deleteVendor(@RequestParam String id,
             RedirectAttributes redirectAttributes, HttpSession session) {
         if (!SessionManager.isLoggedIn(session)) {
             return RedirectUtil.redirectToLogin(redirectAttributes);

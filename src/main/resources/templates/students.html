@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Students - Library Management System</title>
+    <link rel="stylesheet" href="/styles.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/scripts/tailwind-config.js"></script>
-    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="app-container flex min-h-screen">
@@ -38,14 +38,20 @@
             </button>
             <h1>Students</h1>
           </div>
-          <div class="topbar-search">
+          <form class="topbar-search" th:action="@{/students}" method="get">
             <input
               type="search"
               id="topbarSearch"
+              name="search"
               placeholder="Search students by name, roll, email..."
-              autocomplete="off"
+              th:value="${searchTerm}"
             />
-          </div>
+            <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+          </form>
           <button
             class="topbar-search-icon"
             id="mobileSearchBtn"
@@ -55,70 +61,285 @@
             🔍
           </button>
           <div class="topbar-actions">
-            <a href="/add-student" class="btn btn-primary">Add Student</a>
+            <button
+              class="btn btn-primary"
+              id="openStudentModalBtn"
+              type="button"
+            >
+              Add Student
+            </button>
           </div>
         </header>
 
         <!-- Mobile Search Overlay -->
         <div class="topbar-search-overlay" id="mobileSearchOverlay">
-          <div class="topbar-search-mobile">
+          <form
+            class="topbar-search-mobile"
+            th:action="@{/students}"
+            method="get"
+          >
             <input
               type="search"
               id="mobileSearchInput"
+              name="search"
               placeholder="Search students by name, roll, email..."
-              autocomplete="off"
+              th:value="${searchTerm}"
             />
             <button
+              type="submit"
+              style="display: none"
+              aria-label="Search"
+            ></button>
+            <button
+              type="button"
               class="close-search"
               id="closeMobileSearch"
               aria-label="Close search"
             >
               ✕
             </button>
-          </div>
+          </form>
         </div>
 
         <div class="content-area flex-1 p-4 md:p-8 overflow-auto">
-          <div
-            class="breadcrumbs flex items-center gap-2 mb-6 text-sm text-gray-600 flex-wrap"
-          >
-            <a
-              href="/dashboard"
-              class="text-blue-500 hover:text-blue-600 hover:underline transition-colors"
-              >Dashboard</a
-            >
-            <span class="text-gray-400">/</span>
-            <span class="text-gray-900 font-semibold">Students</span>
+          <div class="breadcrumbs">
+            <a href="/dashboard">Dashboard</a>
+            <span class="separator">/</span>
+            <span class="current">Students</span>
           </div>
+
+          <!-- Success/Error Messages -->
           <div
-            class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
-          >
-            <div
-              class="px-4 md:px-6 py-4 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-            >
-              <h2 class="text-xl md:text-2xl font-bold text-gray-900">
-                All Students<span
-                  class="text-sm text-gray-500 font-normal ml-2"
-                  id="studentCount"
-                ></span>
-              </h2>
-              <div
-                class="flex flex-col md:flex-row gap-3 md:items-center w-full md:w-auto"
-              ></div>
+            th:if="${successMessage}"
+            class="success-message bg-green-50 border-green-200 text-green-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${successMessage}"
+          ></div>
+          <div
+            th:if="${errorMessage}"
+            class="alert error bg-red-50 border-red-200 text-red-800 rounded-lg p-4 mb-4 flex items-center gap-3 font-medium shadow-sm"
+            th:text="${errorMessage}"
+          ></div>
+
+          <div class="table-container">
+            <div class="table-header">
+              <h2>All Students</h2>
+              <div class="table-controls"></div>
             </div>
-            <div class="overflow-x-auto -webkit-overflow-scrolling-touch">
-              <div id="tableContainer" class="min-w-full"></div>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Roll Number</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:if="${#lists.isEmpty(students)}">
+                    <td colspan="3" class="text-center py-12">
+                      <div
+                        class="flex flex-col items-center justify-center space-y-3"
+                      >
+                        <div class="text-6xl opacity-50">📭</div>
+                        <h3 class="text-lg font-semibold">No students found</h3>
+                        <p class="text-sm text-gray-600">
+                          Click "Add Student" to create one.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr th:each="student : ${students}">
+                    <td th:text="${student.name}"></td>
+                    <td th:text="${student.roll}"></td>
+                    <td class="action-buttons-cell">
+                      <div class="action-buttons">
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-small view-student-btn"
+                          th:data-id="${student.id}"
+                          th:data-name="${student.name}"
+                          th:data-roll="${student.roll}"
+                          th:data-email="${student.email ?: ''}"
+                          th:data-phone="${student.phone ?: ''}"
+                          th:data-department="${student.department ?: ''}"
+                          th:data-created-at="${student.createdAt != null ? #temporals.format(student.createdAt, 'yyyy-MM-dd') : '-'}"
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-secondary btn-small edit-student-btn"
+                          th:data-id="${student.id}"
+                          th:data-name="${student.name}"
+                          th:data-roll="${student.roll}"
+                          th:data-email="${student.email ?: ''}"
+                          th:data-phone="${student.phone ?: ''}"
+                          th:data-department="${student.department ?: ''}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          th:action="@{/students/delete}"
+                          method="post"
+                          style="display: inline"
+                          class="delete-student-form"
+                        >
+                          <input
+                            type="hidden"
+                            name="id"
+                            th:value="${student.id}"
+                          />
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-small"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <div
-              id="paginationContainer"
-              class="px-4 md:px-6 py-4 border-t border-gray-200"
-            ></div>
           </div>
         </div>
       </main>
     </div>
 
+    <!-- View Student Details Modal -->
+    <div id="viewStudentModal" class="hidden">
+      <div class="modal-overlay" id="viewStudentModalOverlay">
+        <div class="modal" style="max-width: 500px">
+          <div class="modal-header">
+            <h3>Student Details</h3>
+            <button class="modal-close view-student-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="student-details">
+              <div class="detail-row">
+                <strong>Name:</strong>
+                <span id="viewStudentName"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Roll Number:</strong>
+                <span id="viewStudentRoll"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Email:</strong>
+                <span id="viewStudentEmail"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Phone:</strong>
+                <span id="viewStudentPhone"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Department:</strong>
+                <span id="viewStudentDepartment"></span>
+              </div>
+              <div class="detail-row">
+                <strong>Created At:</strong>
+                <span id="viewStudentCreatedAt"></span>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary view-student-modal-close"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Student Modal -->
+    <div id="studentModal" class="hidden">
+      <div class="modal-overlay" id="studentModalOverlay">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 id="studentModalTitle">Add Student</h3>
+            <button class="modal-close student-modal-close" type="button">
+              &times;
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="studentForm" th:action="@{/students}" method="post">
+              <input type="hidden" id="studentId" name="id" />
+              <div class="form-group">
+                <label for="studentName">Name </label>
+                <input
+                  type="text"
+                  id="studentName"
+                  name="name"
+                  th:value="${studentRequestDTO?.name}"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="studentRoll">Roll Number</label>
+                <input
+                  type="text"
+                  id="studentRoll"
+                  name="roll"
+                  th:value="${studentRequestDTO?.roll}"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="studentEmail">Email</label>
+                <input
+                  type="email"
+                  id="studentEmail"
+                  name="email"
+                  th:value="${studentRequestDTO?.email}"
+                />
+              </div>
+              <div class="form-group">
+                <label for="studentPhone">Phone</label>
+                <input
+                  type="tel"
+                  id="studentPhone"
+                  name="phone"
+                  th:value="${studentRequestDTO?.phone}"
+                />
+              </div>
+              <div class="form-group">
+                <label for="studentDepartment">Department</label>
+                <input
+                  type="text"
+                  id="studentDepartment"
+                  name="department"
+                  th:value="${studentRequestDTO?.department}"
+                />
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary student-modal-close"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  id="studentSubmitBtn"
+                >
+                  Add Student
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="/app.js"></script>
+    <script src="/scripts/delete-modal.js"></script>
     <script src="/scripts/students.js"></script>
   </body>
 </html>

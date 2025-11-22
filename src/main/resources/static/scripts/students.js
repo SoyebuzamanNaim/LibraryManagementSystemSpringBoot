@@ -1,161 +1,144 @@
-let allStudents = [];
-let currentPage = 1;
-const pageSize = 10;
-
-function loadStudents() {
-  allStudents = window.LMS.Students.getAll();
-  applyFilters();
-}
-
-function applyFilters() {
-  const searchInput =
-    document.getElementById("topbarSearch") ||
-    document.getElementById("searchInput");
-  const searchTerm = (searchInput ? searchInput.value : "").toLowerCase();
-  let filtered = allStudents;
-
-  if (searchTerm) {
-    filtered = allStudents.filter(
-      (student) =>
-        student.name.toLowerCase().includes(searchTerm) ||
-        (student.roll && student.roll.toLowerCase().includes(searchTerm)) ||
-        (student.email && student.email.toLowerCase().includes(searchTerm))
-    );
-  }
-
-  const pagination = window.LMS.Table.paginate(filtered, currentPage, pageSize);
-
-  // Update count display
-  const countElement = document.getElementById("studentCount");
-  if (countElement) {
-    const totalCount = filtered.length;
-    countElement.textContent = ` (${totalCount} ${
-      totalCount === 1 ? "student" : "students"
-    })`;
-  }
-
-  renderTable(pagination.data);
-  window.LMS.Table.createPagination(
-    "paginationContainer",
-    pagination,
-    changePage
-  );
-}
-
-function renderTable(students) {
-  const columns = [
-    { key: "roll", label: "Roll Number" },
-    { key: "name", label: "Name" },
-    { key: "email", label: "Email", hideOnMobile: true },
-    { key: "phone", label: "Phone", hideOnMobile: true },
-    { key: "department", label: "Department", hideOnMobile: true },
-    {
-      key: "subscriptionId",
-      label: "Subscription",
-      render: (value, item) => {
-        if (!value) return '<span class="badge badge-warning">None</span>';
-        const subscription = window.LMS.Subscriptions.getById(value);
-        if (subscription && subscription.active) {
-          return '<span class="badge badge-success">Active</span>';
-        }
-        return '<span class="badge badge-danger">Inactive</span>';
-      },
-    },
-  ];
-
-  const actions = [
-    {
-      label: "View",
-      class: "btn-secondary",
-      onclick: "viewStudent",
-    },
-    {
-      label: "Edit",
-      class: "btn-secondary",
-      onclick: "editStudent",
-    },
-    {
-      label: "Delete",
-      class: "btn-danger",
-      onclick: "deleteStudent",
-    },
-  ];
-
-  window.LMS.Table.createTable("tableContainer", students, columns, actions);
-}
-
-function changePage(page) {
-  currentPage = page;
-  applyFilters();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function viewStudent(btn, student) {
-  const subscription = student.subscriptionId
-    ? window.LMS.Subscriptions.getById(student.subscriptionId)
-    : null;
-
-  const subscriptionBadge = subscription
-    ? subscription.active
-      ? '<span class="badge badge-success">Active</span>'
-      : '<span class="badge badge-danger">Inactive</span>'
-    : "None";
-
-  const content = `
-        <h3>${window.LMS.UI.escapeHtml(student.name)}</h3>
-        <p><strong>Roll Number:</strong> ${window.LMS.UI.escapeHtml(
-          student.roll || "-"
-        )}</p>
-        <p><strong>Email:</strong> ${window.LMS.UI.escapeHtml(
-          student.email || "-"
-        )}</p>
-        <p><strong>Phone:</strong> ${window.LMS.UI.escapeHtml(
-          student.phone || "-"
-        )}</p>
-        <p><strong>Department:</strong> ${window.LMS.UI.escapeHtml(
-          student.department || "-"
-        )}</p>
-        <p><strong>Subscription:</strong> ${subscriptionBadge}</p>
-        <p><strong>Created:</strong> ${window.LMS.UI.escapeHtml(
-          window.LMS.UI.formatDate(student.createdAt)
-        )}</p>
-      `;
-
-  window.LMS.UI.showModal("Student Details", content, null, true);
-}
-
-function editStudent(btn, student) {
-  window.location.href = `/edit-student?id=${student.id}`;
-}
-
-function deleteStudent(btn, student) {
-  window.LMS.UI.confirmDelete(
-    `Are you sure you want to delete "${student.name}"?`,
-    () => {
-      const result = window.LMS.Students.delete(student.id);
-      if (result === true) {
-        window.LMS.UI.showToast("Student deleted successfully", "success");
-        loadStudents();
-      } else if (result && result.error) {
-        window.LMS.UI.showToast(result.error, "error");
-      } else {
-        window.LMS.UI.showToast("Failed to delete student", "error");
-      }
-    }
-  );
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  if (!window.LMS.Auth.requireAuth()) return;
+  const modal = document.getElementById("studentModal");
+  const openBtn = document.getElementById("openStudentModalBtn");
+  const closeBtns = document.querySelectorAll(".student-modal-close");
+  const overlay = document.getElementById("studentModalOverlay");
+  const form = document.getElementById("studentForm");
 
-  loadStudents();
+  function openModal() {
+    modal.classList.remove("hidden");
+    document.getElementById("studentModalTitle").textContent = "Add Student";
+    document.getElementById("studentSubmitBtn").textContent = "Add Student";
+    form.action = "/students";
+    form.reset();
+    document.getElementById("studentId").value = "";
+  }
 
-  const debouncedSearch = window.LMS.UI.debounce(applyFilters, 300);
-  const topbarSearch = document.getElementById("topbarSearch");
-  if (topbarSearch) {
-    topbarSearch.addEventListener("input", () => {
-      currentPage = 1;
-      debouncedSearch();
+  function closeModal() {
+    modal.classList.add("hidden");
+    form.reset();
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener("click", openModal);
+  }
+
+  closeBtns.forEach((btn) => {
+    btn.addEventListener("click", closeModal);
+  });
+
+  if (overlay) {
+    overlay.addEventListener("click", (e) => {
+      if (e.target.id === "studentModalOverlay") {
+        closeModal();
+      }
     });
+  }
+
+  const searchInput = document.getElementById("topbarSearch");
+  const searchForm = searchInput?.closest("form");
+  if (searchInput && searchForm) {
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        searchForm.submit();
+      }
+    });
+
+    searchInput.addEventListener("input", function () {
+      if (this.value.trim() === "") {
+        window.location.href = "/students";
+      }
+    });
+  }
+
+  const mobileSearchInput = document.getElementById("mobileSearchInput");
+  const mobileSearchForm = mobileSearchInput?.closest("form");
+  if (mobileSearchInput && mobileSearchForm) {
+    mobileSearchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        mobileSearchForm.submit();
+      }
+    });
+  }
+
+  if (window.DeleteModal) {
+    window.DeleteModal.initDeleteForms("delete-student-form", "student");
+  }
+
+  const viewModalCloseBtns = document.querySelectorAll(
+    ".view-student-modal-close"
+  );
+  viewModalCloseBtns.forEach((btn) => {
+    btn.addEventListener("click", closeViewModal);
+  });
+
+  const viewModalOverlay = document.getElementById("viewStudentModalOverlay");
+  if (viewModalOverlay) {
+    viewModalOverlay.addEventListener("click", function (e) {
+      if (e.target.id === "viewStudentModalOverlay") {
+        closeViewModal();
+      }
+    });
+  }
+});
+
+function closeViewModal() {
+  const modal = document.getElementById("viewStudentModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+function editStudent(id, name, roll, email, phone, department) {
+  const modal = document.getElementById("studentModal");
+  const form = document.getElementById("studentForm");
+  document.getElementById("studentModalTitle").textContent = "Edit Student";
+  document.getElementById("studentSubmitBtn").textContent = "Update Student";
+  document.getElementById("studentId").value = id;
+  document.getElementById("studentName").value = name || "";
+  document.getElementById("studentRoll").value = roll || "";
+  document.getElementById("studentEmail").value = email || "";
+  document.getElementById("studentPhone").value = phone || "";
+  document.getElementById("studentDepartment").value = department || "";
+  form.action = "/students/update";
+  modal.classList.remove("hidden");
+}
+
+function viewStudent(id, name, roll, email, phone, department, createdAt) {
+  const modal = document.getElementById("viewStudentModal");
+  if (modal) {
+    document.getElementById("viewStudentName").textContent = name || "-";
+    document.getElementById("viewStudentRoll").textContent = roll || "-";
+    document.getElementById("viewStudentEmail").textContent = email || "-";
+    document.getElementById("viewStudentPhone").textContent = phone || "-";
+    document.getElementById("viewStudentDepartment").textContent =
+      department || "-";
+    document.getElementById("viewStudentCreatedAt").textContent =
+      createdAt || "-";
+    modal.classList.remove("hidden");
+  }
+}
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("view-student-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const name = e.target.getAttribute("data-name") || "";
+    const roll = e.target.getAttribute("data-roll") || "";
+    const email = e.target.getAttribute("data-email") || "";
+    const phone = e.target.getAttribute("data-phone") || "";
+    const department = e.target.getAttribute("data-department") || "";
+    const createdAt = e.target.getAttribute("data-created-at") || "";
+    viewStudent(id, name, roll, email, phone, department, createdAt);
+  }
+  if (e.target.classList.contains("edit-student-btn")) {
+    const id = e.target.getAttribute("data-id");
+    const name = e.target.getAttribute("data-name") || "";
+    const roll = e.target.getAttribute("data-roll") || "";
+    const email = e.target.getAttribute("data-email") || "";
+    const phone = e.target.getAttribute("data-phone") || "";
+    const department = e.target.getAttribute("data-department") || "";
+    editStudent(id, name, roll, email, phone, department);
   }
 });
